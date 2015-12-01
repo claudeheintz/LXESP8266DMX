@@ -2,7 +2,7 @@
 /*!
     @file     LXESP8266UARTDMX.cpp
     @author   Claude Heintz
-    @license  MIT (see LXESP8266UARTDMX.h)
+    @license  BSD (see LXESP8266UARTDMX.h)
 
     DMX Driver for ESP8266 using UART1.
 
