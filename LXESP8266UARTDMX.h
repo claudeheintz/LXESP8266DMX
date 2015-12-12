@@ -66,11 +66,24 @@ TX (2) |----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
 
 typedef void (*LXRecvCallback)(int);
 
+/*!   
+@class LX8266DMXOutput
+@abstract
+   LX8266DMXOutput is a driver for sending DMX using the ESP8266's UART1 which has TX mapped to GPIO2.
+   LX8266DMXOutput continuously sends DMX once its interrupts have been enabled using start().
+   Use setSlot() to set the level value for a particular DMX dimmer/address/channel.
+*/
+
+
 class LX8266DMXOutput {
 
   public:
+  /*!
+	 * @brief constructor creates driver object for full 512 slot DMX output
+   */
 	LX8266DMXOutput ( void );
 	/*!
+	 * @brief constructor specifying number of slots and pin to be driven high to enable output
     * @param pin used to control driver chip's DE (data enable) line, HIGH for output
     * @param slots number of slots aka channels or addresses (~24-512)
    */
@@ -113,7 +126,6 @@ class LX8266DMXOutput {
     * @brief UART tx empty interrupt handler
    */
   	void		_tx_empty_irq(void);
-	void		_tx_empty_irq1(void);
     
   private:
 
