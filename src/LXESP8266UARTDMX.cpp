@@ -3,6 +3,7 @@
     @file     LXESP8266UARTDMX.cpp
     @author   Claude Heintz
     @license  BSD (see LXESP8266UARTDMX.h)
+    @copyright 2015 by Claude Heintz
 
     DMX Driver for ESP8266 using UART1.
 
@@ -11,6 +12,7 @@
     v1.0 - First release
 */
 /**************************************************************************/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -99,7 +101,13 @@ void ICACHE_RAM_ATTR uart_rx_interrupt_handler(LX8266DMXInput* dmxi) {
 			dmxi->_rx_complete_irq((char) (U1F & 0xff));
 			U1IC = (1 << UIFF);
 	  }
-   
+	  
+	  // if frame error call _rx_complete_irq and then clear interrupt
+	  
+     if ( (U1IS & (1 << UIFR)) ) {				//frame error == break	
+        dmxi->_rx_complete_irq(0);
+        U1IC |= (1 << UIFR);
+     }
 }
 
 
@@ -306,10 +314,6 @@ uint8_t* LX8266DMXOutput::dmxData(void) {
 	return &_dmxData[0];
 }
 
-void LX8266DMXOutput::_tx_empty_irq1(void) {
-USF(1) = _interrupt_status;
-_interrupt_status++;
-}
 /*!
  * @discussion TX FIFO EMPTY INTERRUPT
  *
@@ -384,5 +388,110 @@ void ICACHE_RAM_ATTR LX8266DMXOutput::_tx_empty_irq(void) {
 				_dmx_state = DMX_STATE_START;
 			}
 			break;		// <- DMX_STATE_BREAK_SENT
+	}
+}
+
+//************************************************************************************
+// ********************** LX8266DMXInput member functions  ************************
+// WARNING:  the input portion of this library is a draft and is not tested or complete in this version
+
+LX8266DMXInput::LX8266DMXInput ( void )
+{
+	//zero buffer including _dmxData[0] which is start code
+    for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
+    	_dmxData[n] = 0;
+    }
+    _interrupt_status = ISR_DISABLED;
+}
+
+LX8266DMXInput::LX8266DMXInput ( uint8_t pin  )
+{
+	pinMode(pin, OUTPUT);
+	digitalWrite(pin, LOW);
+	//zero buffer including _dmxData[0] which is start code
+    for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
+    	_dmxData[n] = 0;
+    }
+    _interrupt_status = ISR_DISABLED;
+}
+
+LX8266DMXInput::~LX8266DMXInput ( void )
+{
+    stop();
+    _receive_callback = NULL;
+}
+
+void LX8266DMXInput::start ( void ) {
+	if ( _interrupt_status != ISR_ENABLED ) {	//prevent messing up sequence if already started...
+	   uart_init_rx(DMX_DATA_BAUD, FORMAT_8N2, this);
+		_interrupt_status = ISR_ENABLED;
+		_dmx_state = DMX_STATE_IDLE;
+	}
+}
+
+void LX8266DMXInput::stop ( void ) { 
+	uart_uninit_rx();
+	_interrupt_status = ISR_DISABLED;
+}
+
+uint8_t LX8266DMXInput::getSlot (int slot) {
+	return _dmxData[slot];
+}
+
+uint8_t* LX8266DMXInput::dmxData(void) {
+	return &_dmxData[0];
+}
+
+void LX8266DMXInput::setDataReceivedCallback(LXRecvCallback callback) {
+	_receive_callback = callback;
+}
+
+/*!
+ * @discussion RX ISR (receive interrupt service routine)
+ *
+ * this routine is called when USART receives data
+ *
+ * wait for break:  if have previously read data call callback function
+ *
+ * then on next receive:  check start code
+ *
+ * then on next receive:  read data until done (in which case idle)
+ *
+ *  NOTE: data is not double buffered
+ *
+ *  so a complete single frame is not guaranteed
+ *
+ *  the ISR will continue to read the next frame into the buffer
+*/
+void LX8266DMXInput::_rx_complete_irq(uint8_t incoming_byte) {
+	
+	if ( (U1IS & (1 << UIFR)) ) {				//frame error == break	
+		_dmx_state = DMX_STATE_BREAK;
+		if ( _current_slot > 0 ) {
+			if ( _receive_callback != NULL ) {
+				_receive_callback(_current_slot);
+			}
+		}
+		_current_slot = 0;
+		return;
+	}
+	
+	switch ( _dmx_state ) {
+	
+		case DMX_STATE_BREAK:
+			if ( incoming_byte == 0 ) {						//start code == zero (DMX)
+				_dmx_state = DMX_STATE_DATA;
+				_current_slot = 1;
+			} else {
+				_dmx_state = DMX_STATE_IDLE;
+			}
+			break;
+			
+		case DMX_STATE_DATA:
+			_dmxData[_current_slot++] = incoming_byte;
+			if ( _current_slot > DMX_MAX_SLOTS ) {
+				_dmx_state = DMX_STATE_IDLE;			// go to idle, wait for next break
+			}
+			break;
 	}
 }

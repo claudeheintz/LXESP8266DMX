@@ -266,6 +266,12 @@ function disclosure_triangle(elt) {
 <hr class="afterClassOrHeaderInfo"><br><a name="HeaderDoc_classes"></a>
 <h2 class="h2tight">Classes</h2>
 <dl>
+<dt><tt><a href="Classes/LX8266DMXInput/index.html#//apple_ref/cpp/cl/LX8266DMXInput" target="_top">LX8266DMXInput</a></tt></dt>
+<dd><p>LX8266DMXInput is a driver for sending DMX using the ESP8266's UART0 RX pin
+LX8266DMXInput continuously updates its DMX buffer once its interrupts have been enabled using start()
+and DMX data is received by UART0.
+Use getSlot() to read the level value for a particular DMX dimmer/address/channel.
+</dd>
 <dt><tt><a href="Classes/LX8266DMXOutput/index.html#//apple_ref/cpp/cl/LX8266DMXOutput" target="_top">LX8266DMXOutput</a></tt></dt>
 <dd><p>LX8266DMXOutput is a driver for sending DMX using the ESP8266's UART1 which has TX mapped to GPIO2.
 LX8266DMXOutput continuously sends DMX once its interrupts have been enabled using start().
@@ -273,7 +279,7 @@ Use setSlot() to set the level value for a particular DMX dimmer/address/channel
 </dd>
 </dl>
 <p class="gapBeforeFooter">&nbsp;</p><hr class="afterFooter"><div class="hd_copyright_and_timestamp">
-<p class="hd_timestamp">Last Updated: Saturday, December 12, 2015
+<p class="hd_timestamp">Last Updated: Sunday, December 13, 2015
 </p></div>
 </td></tr></table>
 </body></html>

@@ -156,3 +156,95 @@ class LX8266DMXOutput {
   	
 };
 
+/*!   
+@class LX8266DMXInput
+@abstract
+   LX8266DMXInput is a driver for sending DMX using the ESP8266's UART0 RX pin
+   LX8266DMXInput continuously updates its DMX buffer once its interrupts have been enabled using start()
+   and DMX data is received by UART0.
+   Use getSlot() to read the level value for a particular DMX dimmer/address/channel.
+*/
+
+class LX8266DMXInput {
+
+  public:
+	LX8266DMXInput ( void );
+	/*!
+	 * @param pin used to control driver chip's DE (data enable) line, LOW for input
+	*/
+	LX8266DMXInput ( uint8_t pin );
+   ~LX8266DMXInput ( void );
+   
+   /*!
+    * @brief starts interrupt that continuously reads DMX data
+    * @discussion sets up baud rate, bits and parity, 
+    *             sets globals accessed in ISR, 
+    *             enables transmission and tx interrupt
+   */
+   void start( void );
+   /*!
+    * @brief disables receive and rx interrupt
+   */
+	void stop( void );
+
+   /*!
+    * @brief reads the value of a slot/address/channel
+    * @discussion NOTE: Data is not double buffered.  
+    *                   So a complete single frame is not guaranteed.  
+    *                   The ISR continuously reads the next frame into the buffer
+    * @return level (0-255)
+   */
+   uint8_t getSlot (int slot);
+   /*!
+    * @brief provides direct access to data array
+    * @return pointer to dmx array
+   */
+   uint8_t* dmxData(void);
+   
+   /*!
+    * @brief Function called when DMX frame has been read
+    * @discussion Sets a pointer to a function that is called
+    *             on the break after a DMX frame has been received.  
+    *             Whatever happens in this function should be quick!  
+    *             Best used to set a flag that is polled outside of ISR for available data.
+   */
+   void setDataReceivedCallback(LXRecvCallback callback);
+   
+   /*!
+    * @brief UART receive interrupt handler //needs fixing...
+   */
+  	void  _rx_complete_irq(uint8_t c);
+    
+  private:
+   /*!
+   * @brief represents phase of receiving dmx packet data/break/etc
+   */
+  	uint8_t  _dmx_state;
+  	
+   /*!
+    * @brief True when ISR is enabled
+   */
+  	uint8_t  _interrupt_status;
+  	
+  	/*!
+   * @brief number of dmx slots ~24 to 512
+   */
+  	uint16_t  _current_slot;
+  	
+   /*!
+   * @brief number of dmx slots ~24 to 512
+   */
+  	uint16_t  _slots;
+  	
+   /*!
+    * @brief Array of dmx data including start code
+   */
+  	uint8_t  _dmxData[DMX_MAX_SLOTS+1];
+  	
+  	/*!
+    * @brief Pointer to receive callback function
+   */
+  	LXRecvCallback _receive_callback;
+};
+
+#endif // ifndef LX8266DMX_H
