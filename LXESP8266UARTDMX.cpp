@@ -239,7 +239,7 @@ parity
 	#define DMX_STATE_BREAK_SENT 4
 	
 	//***** interrupts to wait before changing Baud
-    #define DATA_END_WAIT 25
+    #define DATA_END_WAIT 28		//initially was 25 may not be quite long enough?
     #define BREAK_SENT_WAIT 70
 
 	//***** status is if interrupts are enabled and IO is active
