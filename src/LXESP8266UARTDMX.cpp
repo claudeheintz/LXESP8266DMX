@@ -86,27 +86,26 @@ void ICACHE_RAM_ATTR uart_tx_interrupt_handler(LX8266DMXOutput* dmxo) {
     // then call _tx_empty_irq
 	  if(U1IS & (1 << UIFE)) {
 			U1IC = (1 << UIFE);
-			dmxo->_tx_empty_irq();
+			dmxo->txEmptyInterruptHandler();
 	  }
 	 
 }
 
 void ICACHE_RAM_ATTR uart_rx_interrupt_handler(LX8266DMXInput* dmxi) {
 
-    // -------------- UART 1 --------------
+    // -------------- UART 0 --------------
     // check uart status register 
-    // if read buffer is full call _rx_complete_irq and then clear interrupt
+    // if read buffer is full, call receiveInterruptHandler and then clear interrupt
 
-	  while(U1IS & (1 << UIFF)) {
-			dmxi->_rx_complete_irq((char) (U1F & 0xff));
-			U1IC = (1 << UIFF);
+	  while(U0IS & (1 << UIFF)) {
+			dmxi->receiveInterruptHandler((char) (U0F & 0xff));
+			U0IC = (1 << UIFF);
 	  }
-	  
-	  // if frame error call _rx_complete_irq and then clear interrupt
-	  
-     if ( (U1IS & (1 << UIFR)) ) {				//frame error == break	
-        dmxi->_rx_complete_irq(0);
-        U1IC |= (1 << UIFR);
+     
+     // if break detected, call receiveInterruptHandler and then clear interrupt
+     if ( (U0IS & (1 << UIBD)) ) {				//break detected
+     		dmxi->receiveInterruptHandler(0);
+     		U0IC |= (1 << UIBD);
      }
 }
 
@@ -139,13 +138,16 @@ void uart_enable_rx_interrupt(LX8266DMXInput* dmxi) {
 	USIC(UART0) = 0x1ff;
 	uint8_t* uart;
 	ETS_UART_INTR_ATTACH(&uart_rx_interrupt_handler, dmxi);
-    USIE(UART0) |= (1 << UIFF);
+    USIE(UART0) |= (1 << UIFF);   //receive full
+    //USIE(UART0) |= (1 << UIFR); frame error
+    USIE(UART0) |= (1 << UIBD);   //break detected
+    ETS_UART_INTR_ENABLE();
 }
 
 //LX uses uart0 for rx
 void uart_disable_rx_interrupt(void) {
    USIE(UART0) &= ~(1 << UIFF);
-   ETS_UART_INTR_DISABLE();
+   //ETS_UART_INTR_DISABLE();		disables all UART interrupts including Hardware serial
 }
 
 //LX uses uart1 for tx
@@ -160,7 +162,7 @@ void uart_enable_tx_interrupt(LX8266DMXOutput* dmxo) {
 //LX uses uart1 for tx
 void uart_disable_tx_interrupt(void) {
    USIE(UART1) &= ~(1 << UIFE);
-   ETS_UART_INTR_DISABLE();
+   //ETS_UART_INTR_DISABLE();		disables all UART interrupts including Hardware serial
 }
 
 //LX uses uart1 for tx, uart0 for rx
@@ -194,12 +196,12 @@ void uart_init_rx(int baudrate, byte config, LX8266DMXInput* dmxi) {
     pinMode(3, SPECIAL);
     uart_set_baudrate(UART0, baudrate);
     USC0(UART0) = config;
+    
+    conf1 |= (0x01 << UCFFT);
+    USC1(UART0) = conf1;
 
     uart_rx_flush();
     uart_enable_rx_interrupt(dmxi);
-
-    conf1 |= (0x01 << UCFFT);
-    USC1(UART0) = conf1;
 }
 
 void uart_uninit_tx(void) {
@@ -247,7 +249,7 @@ parity
 	#define DMX_STATE_BREAK_SENT 4
 	
 	//***** interrupts to wait before changing Baud
-    #define DATA_END_WAIT 28		//initially was 25 may not be quite long enough?
+    #define DATA_END_WAIT 25		//initially was 25 may not be quite long enough?
     #define BREAK_SENT_WAIT 70
 
 	//***** status is if interrupts are enabled and IO is active
@@ -342,8 +344,8 @@ uint8_t* LX8266DMXOutput::dmxData(void) {
  * and the cycle repeats...
 */
 
-void ICACHE_RAM_ATTR LX8266DMXOutput::_tx_empty_irq(void) {
-	
+void ICACHE_RAM_ATTR LX8266DMXOutput::txEmptyInterruptHandler(void) {
+
 	switch ( _dmx_state ) {
 		
 		case DMX_STATE_BREAK:
@@ -423,9 +425,9 @@ LX8266DMXInput::~LX8266DMXInput ( void )
 
 void LX8266DMXInput::start ( void ) {
 	if ( _interrupt_status != ISR_ENABLED ) {	//prevent messing up sequence if already started...
+	   _dmx_state = DMX_STATE_IDLE;
 	   uart_init_rx(DMX_DATA_BAUD, FORMAT_8N2, this);
 		_interrupt_status = ISR_ENABLED;
-		_dmx_state = DMX_STATE_IDLE;
 	}
 }
 
@@ -463,9 +465,9 @@ void LX8266DMXInput::setDataReceivedCallback(LXRecvCallback callback) {
  *
  *  the ISR will continue to read the next frame into the buffer
 */
-void LX8266DMXInput::_rx_complete_irq(uint8_t incoming_byte) {
+void LX8266DMXInput::receiveInterruptHandler(uint8_t incoming_byte) {
 	
-	if ( (U1IS & (1 << UIFR)) ) {				//frame error == break	
+	if ( (U0IS & (1 << UIBD)) ) {				//break detected
 		_dmx_state = DMX_STATE_BREAK;
 		if ( _current_slot > 0 ) {
 			if ( _receive_callback != NULL ) {

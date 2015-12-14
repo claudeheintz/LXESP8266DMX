@@ -111,7 +111,7 @@ class LX8266DMXOutput {
 	*/
 	void setMaxSlots (int slot);
 	/*!
-	 * @brief Sets the output value of a slot
+	 * @brief Sets the output value of a slot  Note:slot[0] is DMX start code!
 	 * @param slot number of the slot aka address or channel (1-512)
 	 * @param value level (0-255)
 	*/
@@ -125,7 +125,7 @@ class LX8266DMXOutput {
    /*!
     * @brief UART tx empty interrupt handler
    */
-  	void		_tx_empty_irq(void);
+  	void		txEmptyInterruptHandler(void);
     
   private:
 
@@ -213,7 +213,7 @@ class LX8266DMXInput {
    /*!
     * @brief UART receive interrupt handler //needs fixing...
    */
-  	void  _rx_complete_irq(uint8_t c);
+  	void  receiveInterruptHandler(uint8_t c);
     
   private:
    /*!
