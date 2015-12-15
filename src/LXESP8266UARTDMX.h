@@ -42,16 +42,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ESP8266 Pin
  |                         SN 75176 A or MAX 481CPA
  V                            _______________
-       |                      | 1      Vcc 8 |------(+5v)
-       |       |              |              |              DMX Output
-       |                 +----| 2        B 7 |---------------- Pin 2
+RX (3) |----------------------| 1      Vcc 8 |------(+5v)
+       |                      |              |              DMX Output
+       |                 +----| 2 !RE    B 7 |---------------- Pin 2
        |                 |    |              |
- (4/5) |------(or +5v)---+----| 3 DE     A 6 |---------------- Pin 3
+ (4/5) |----{+5v/GND}----+----| 3 DE     A 6 |---------------- Pin 3
        |                      |              |
 TX (2) |----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
        |                                         |
        |                                       (GND)
 
+       Data Enable (DE) and Inverted Read Enable (!RE) can be wired to +5v for output or Gnd for input
+       if direction switching is not needed.
 */
 
 
