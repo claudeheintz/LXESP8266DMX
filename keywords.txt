@@ -1,0 +1,28 @@
+#######################################
+# Syntax Coloring Map For LXESP8266DMX
+####################################### 
+# Class
+#######################################
+
+LX8266DMXOutput	KEYWORD1
+LX8266DMXInput		KEYWORD1
+
+#######################################
+# Methods and Functions 
+#######################################	
+
+start								KEYWORD2
+stop								KEYWORD2
+setMaxSlots						KEYWORD2
+setSlot							KEYWORD2
+dmxData							KEYWORD2
+getSlot							KEYWORD2
+setDataReceivedCallback		KEYWORD2
+
+#######################################
+# Constants
+#######################################
+ 
+DMX_MIN_SLOTS	LITERAL1
+DMX_MAX_SLOTS	LITERAL1
+
