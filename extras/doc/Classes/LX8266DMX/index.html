@@ -270,6 +270,8 @@ Use setSlot() to set the level value for a particular DMX dimmer/address/channel
 LX8266DMX continuously updates its DMX buffer once its interrupts have been enabled using startInput()
 and DMX data is received by UART0.
 Use getSlot() to read the level value for a particular DMX dimmer/address/channel.
+</p>
+<p>LX8266DMX is used with a single instance called ESP8266DMX.
 <!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/cl/LX8266DMX;name=end --></p>
 <hr class="afterClassOrHeaderInfo"><br><a name="HeaderDoc_functions"></a>
 <h2 class="h2tight">Member Functions</h2>
@@ -280,17 +282,15 @@ Use getSlot() to read the level value for a particular DMX dimmer/address/channe
 <dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/getSlot/uint8_t/(int)" target="_top">getSlot</a></tt></dt>
 <dd><p>reads the value of a slot/address/channel
 </dd>
-<dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//()" target="_top">LX8266DMX()</a></tt></dt>
-<dd><p>constructor creates driver object for full 512 slot DMX output
-</dd>
-<dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//(uint8_t,uint16_t)" target="_top">LX8266DMX(uint8_t, uint16_t)</a></tt></dt>
-<dd><p>constructor specifying number of slots and pin for a line driver chip's direction control (SN 75176 A or MAX 481CPA).
-</dd>
 <dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/receiveInterruptHandler/void/(uint8_t)" target="_top">receiveInterruptHandler</a></tt></dt>
 <dd><p>UART receive interrupt handler
 </dd>
 <dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/setDataReceivedCallback/void/(LXRecvCallback)" target="_top">setDataReceivedCallback</a></tt></dt>
 <dd><p>Function called when DMX frame has been read
+</dd>
+<dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/setDirectionPin/void/(uint8_t)" target="_top">setDirectionPin</a></tt></dt>
+<dd><p>optional utility sets the pin used to control driver chip's
+DE (data enable) line, HIGH for output, LOW for input.     
 </dd>
 <dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/setMaxSlots/void/(int)" target="_top">setMaxSlots</a></tt></dt>
 <dd><p>Sets the number of slots (aka addresses or channels) sent per DMX frame.
@@ -305,7 +305,8 @@ Use getSlot() to read the level value for a particular DMX dimmer/address/channe
 <dd><p>starts interrupt that continuously sends DMX output
 </dd>
 <dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/stop/void/()" target="_top">stop</a></tt></dt>
-<dd></dd>
+<dd><p>disables transmission and tx interrupt
+</dd>
 <dt><tt><a href="index.html#//apple_ref/cpp/instm/LX8266DMX/txEmptyInterruptHandler/void/()" target="_top">txEmptyInterruptHandler</a></tt></dt>
 <dd><p>UART tx empty interrupt handler
 </dd>
@@ -339,38 +340,6 @@ Use getSlot() to read the level value for a particular DMX dimmer/address/channe
 So a complete single frame is not guaranteed.  
 The ISR continuously reads the next frame into the buffer
 <!-- headerDoc=discussion;uid=//apple_ref/cpp/instm/LX8266DMX/getSlot/uint8_t/(int);name=end --><!-- end discussion -->
-<hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//();   name=LX8266DMX::LX8266DMX -->
-<a name="//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//()"></a>
-<h3><a name="LX8266DMX()">LX8266DMX()</a></h3>
-<hr class="afterName"><p><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//();name=start --><!-- begin abstract --><p>constructor creates driver object for full 512 slot DMX output
-<!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//();name=end --></p>
-<div class='declaration_indent'>
-<pre><tt>public</tt>
-<br><!-- a logicalPath="//apple_ref/cpp/instm/LX8266DMX/LX8266DMX //apple_ref/cpp/clm/LX8266DMX/LX8266DMX //apple_ref/cpp/intfcm/LX8266DMX/LX8266DMX //apple_ref/cpp/intfm/LX8266DMX/LX8266DMX //apple_ref/cpp/func/LX8266DMX //apple_ref/cpp/ftmplt/LX8266DMX/LX8266DMX //apple_ref/cpp/defn/LX8266DMX //apple_ref/cpp/macro/LX8266DMX //apple_ref/doc/anysymbol/LX8266DMX" machineGenerated="true" --><span class="function">LX8266DMX</span><!-- /a --> (
-    <span class="param">void</span> ); </pre>
-</div>
-<hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//(uint8_t,uint16_t);   name=LX8266DMX::LX8266DMX -->
-<a name="//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//(uint8_t,uint16_t)"></a>
-<h3><a name="LX8266DMX(uint8_t,uint16_t)">LX8266DMX(uint8_t, uint16_t)</a></h3>
-<hr class="afterName"><p><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//(uint8_t,uint16_t);name=start --><!-- begin abstract --><p>constructor specifying number of slots and pin for a line driver chip's direction control (SN 75176 A or MAX 481CPA).
-<!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/LX8266DMX//(uint8_t,uint16_t);name=end --></p>
-<div class='declaration_indent'>
-<pre><tt>public</tt>
-<br><!-- a logicalPath="//apple_ref/cpp/instm/LX8266DMX/LX8266DMX //apple_ref/cpp/clm/LX8266DMX/LX8266DMX //apple_ref/cpp/intfcm/LX8266DMX/LX8266DMX //apple_ref/cpp/intfm/LX8266DMX/LX8266DMX //apple_ref/cpp/func/LX8266DMX //apple_ref/cpp/ftmplt/LX8266DMX/LX8266DMX //apple_ref/cpp/defn/LX8266DMX //apple_ref/cpp/macro/LX8266DMX //apple_ref/doc/anysymbol/LX8266DMX" machineGenerated="true" --><span class="function">LX8266DMX</span><!-- /a --> (
-    <!-- a logicalPath="//apple_ref/cpp/cl/uint8_t //apple_ref/cpp/tdef/uint8_t //apple_ref/cpp/tag/uint8_t //apple_ref/cpp/struct/uint8_t //apple_ref/cpp/intf/uint8_t //apple_ref/doc/anysymbol/uint8_t" machineGenerated="true" --><span class="type">uint8_t</span><!-- /a --> <span class="param">pin</span>,
-    <!-- a logicalPath="//apple_ref/cpp/cl/uint16_t //apple_ref/cpp/tdef/uint16_t //apple_ref/cpp/tag/uint16_t //apple_ref/cpp/struct/uint16_t //apple_ref/cpp/intf/uint16_t //apple_ref/doc/anysymbol/uint16_t" machineGenerated="true" --><span class="type">uint16_t</span><!-- /a --> <span class="param">slots</span> ); </pre>
-</div>
-<h5 class="tight"><font face="Lucida Grande,Helvetica,Arial">Parameters</font></h5>
-<div class='param_indent'>
-<dl>
-<dt><!-- headerDoc=functionparam;  uid=//apple_ref/doc/functionparam/LX8266DMX/LX8266DMX/pin;   name=LX8266DMX::pin -->
-<a name="//apple_ref/doc/functionparam/LX8266DMX/LX8266DMX/pin"></a>
-<code>pin</code></dt><dd><p>used to control driver chip's DE (data enable) line, HIGH for output LOW for Input</dd>
-<dt><!-- headerDoc=functionparam;  uid=//apple_ref/doc/functionparam/LX8266DMX/LX8266DMX/slots;   name=LX8266DMX::slots -->
-<a name="//apple_ref/doc/functionparam/LX8266DMX/LX8266DMX/slots"></a>
-<code>slots</code></dt><dd><p>number of slots aka channels or addresses (~24-512)</dd>
-</dl>
-</div>
 <hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/receiveInterruptHandler/void/(uint8_t);   name=LX8266DMX::receiveInterruptHandler -->
 <a name="//apple_ref/cpp/instm/LX8266DMX/receiveInterruptHandler/void/(uint8_t)"></a>
 <h3><a name="receiveInterruptHandler">receiveInterruptHandler</a></h3>
@@ -397,6 +366,25 @@ on the break after a DMX frame has been received.
 Whatever happens in this function should be quick!  
 Best used to set a flag that is polled outside of ISR for available data.
 <!-- headerDoc=discussion;uid=//apple_ref/cpp/instm/LX8266DMX/setDataReceivedCallback/void/(LXRecvCallback);name=end --><!-- end discussion -->
+<hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/setDirectionPin/void/(uint8_t);   name=LX8266DMX::setDirectionPin -->
+<a name="//apple_ref/cpp/instm/LX8266DMX/setDirectionPin/void/(uint8_t)"></a>
+<h3><a name="setDirectionPin">setDirectionPin</a></h3>
+<hr class="afterName"><p><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/setDirectionPin/void/(uint8_t);name=start --><!-- begin abstract --><p>optional utility sets the pin used to control driver chip's
+DE (data enable) line, HIGH for output, LOW for input.     
+<!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/setDirectionPin/void/(uint8_t);name=end --></p>
+<div class='declaration_indent'>
+<pre><tt>public</tt>
+<br><!-- a logicalPath="//apple_ref/cpp/cl/void //apple_ref/cpp/tdef/void //apple_ref/cpp/tag/void //apple_ref/cpp/struct/void //apple_ref/cpp/intf/void //apple_ref/doc/anysymbol/void" machineGenerated="true" --><span class="type">void</span><!-- /a --> <!-- a logicalPath="//apple_ref/cpp/instm/LX8266DMX/setDirectionPin //apple_ref/cpp/clm/LX8266DMX/setDirectionPin //apple_ref/cpp/intfcm/LX8266DMX/setDirectionPin //apple_ref/cpp/intfm/LX8266DMX/setDirectionPin //apple_ref/cpp/func/setDirectionPin //apple_ref/cpp/ftmplt/LX8266DMX/setDirectionPin //apple_ref/cpp/defn/setDirectionPin //apple_ref/cpp/macro/setDirectionPin //apple_ref/doc/anysymbol/setDirectionPin" machineGenerated="true" --><span class="function">setDirectionPin</span><!-- /a -->(
+    <!-- a logicalPath="//apple_ref/cpp/cl/uint8_t //apple_ref/cpp/tdef/uint8_t //apple_ref/cpp/tag/uint8_t //apple_ref/cpp/struct/uint8_t //apple_ref/cpp/intf/uint8_t //apple_ref/doc/anysymbol/uint8_t" machineGenerated="true" --><span class="type">uint8_t</span><!-- /a --> <span class="param">pin</span> ); </pre>
+</div>
+<h5 class="tight"><font face="Lucida Grande,Helvetica,Arial">Parameters</font></h5>
+<div class='param_indent'>
+<dl>
+<dt><!-- headerDoc=functionparam;  uid=//apple_ref/doc/functionparam/LX8266DMX/setDirectionPin/pin;   name=setDirectionPin::pin -->
+<a name="//apple_ref/doc/functionparam/LX8266DMX/setDirectionPin/pin"></a>
+<code>pin</code></dt><dd><p>to be automatically set for input/output direction</dd>
+</dl>
+</div>
 <hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/setMaxSlots/void/(int);   name=LX8266DMX::setMaxSlots -->
 <a name="//apple_ref/cpp/instm/LX8266DMX/setMaxSlots/void/(int)"></a>
 <h3><a name="setMaxSlots">setMaxSlots</a></h3>
@@ -475,14 +463,13 @@ enables transmission and tx interrupt.
 <hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/stop/void/();   name=LX8266DMX::stop -->
 <a name="//apple_ref/cpp/instm/LX8266DMX/stop/void/()"></a>
 <h3><a name="stop">stop</a></h3>
-<hr class="afterName"><div class='declaration_indent'>
+<hr class="afterName"><p><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/stop/void/();name=start --><!-- begin abstract --><p>disables transmission and tx interrupt
+<!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/instm/LX8266DMX/stop/void/();name=end --></p>
+<div class='declaration_indent'>
 <pre><tt>public</tt>
 <br><!-- a logicalPath="//apple_ref/cpp/cl/void //apple_ref/cpp/tdef/void //apple_ref/cpp/tag/void //apple_ref/cpp/struct/void //apple_ref/cpp/intf/void //apple_ref/doc/anysymbol/void" machineGenerated="true" --><span class="type">void</span><!-- /a --> <!-- a logicalPath="//apple_ref/cpp/instm/LX8266DMX/stop //apple_ref/cpp/clm/LX8266DMX/stop //apple_ref/cpp/intfcm/LX8266DMX/stop //apple_ref/cpp/intfm/LX8266DMX/stop //apple_ref/cpp/func/stop //apple_ref/cpp/ftmplt/LX8266DMX/stop //apple_ref/cpp/defn/stop //apple_ref/cpp/macro/stop //apple_ref/doc/anysymbol/stop" machineGenerated="true" --><span class="function">stop</span><!-- /a -->(
     <span class="param">void</span> ); </pre>
 </div>
-<h5 class="tight"><font face="Lucida Grande,Helvetica,Arial">Discussion</font></h5>
-<!-- begin discussion --><!-- headerDoc=discussion;uid=//apple_ref/cpp/instm/LX8266DMX/stop/void/();name=start --><p>disables transmission and tx interrupt
-<!-- headerDoc=discussion;uid=//apple_ref/cpp/instm/LX8266DMX/stop/void/();name=end --><!-- end discussion -->
 <hr class="betweenAPIEntries"><!-- headerDoc=instm;  uid=//apple_ref/cpp/instm/LX8266DMX/txEmptyInterruptHandler/void/();   name=LX8266DMX::txEmptyInterruptHandler -->
 <a name="//apple_ref/cpp/instm/LX8266DMX/txEmptyInterruptHandler/void/()"></a>
 <h3><a name="txEmptyInterruptHandler">txEmptyInterruptHandler</a></h3>
@@ -499,6 +486,9 @@ enables transmission and tx interrupt.
 <dl>
 <dt><tt><a href="index.html#//apple_ref/cpp/data/LX8266DMX/_current_slot" target="_top">_current_slot</a></tt></dt>
 <dd><p>number of dmx slots ~24 to 512
+</dd>
+<dt><tt><a href="index.html#//apple_ref/cpp/data/LX8266DMX/_direction_pin" target="_top">_direction_pin</a></tt></dt>
+<dd><p>pin used to control direction of output driver chip
 </dd>
 <dt><tt><a href="index.html#//apple_ref/cpp/data/LX8266DMX/_dmx_state" target="_top">_dmx_state</a></tt></dt>
 <dd><p>represents phase of sending dmx packet data/break/etc used to change baud settings
@@ -518,9 +508,6 @@ enables transmission and tx interrupt.
 <dt><tt><a href="index.html#//apple_ref/cpp/data/LX8266DMX/_slots" target="_top">_slots</a></tt></dt>
 <dd><p>number of dmx slots ~24 to 512
 </dd>
-<dt><tt><a href="index.html#//apple_ref/cpp/data/LX8266DMX/direction_pin" target="_top">direction_pin</a></tt></dt>
-<dd><p>pin used to control direction of output driver chip
-</dd>
 </dl>
 <hr class="betweenAPIEntries"><!-- headerDoc=data;  uid=//apple_ref/cpp/data/LX8266DMX/_current_slot;   name=LX8266DMX::_current_slot -->
 <a name="//apple_ref/cpp/data/LX8266DMX/_current_slot"></a>
@@ -530,6 +517,15 @@ enables transmission and tx interrupt.
 <div class='declaration_indent'>
 <pre><tt>private</tt>
 <br><!-- a logicalPath="//apple_ref/cpp/cl/uint16_t //apple_ref/cpp/tdef/uint16_t //apple_ref/cpp/tag/uint16_t //apple_ref/cpp/struct/uint16_t //apple_ref/cpp/intf/uint16_t //apple_ref/doc/anysymbol/uint16_t" machineGenerated="true" --><span class="type">uint16_t</span><!-- /a --> <!-- a logicalPath="//apple_ref/cpp/econst/_current_slot //apple_ref/cpp/data/LX8266DMX/_current_slot //apple_ref/cpp/data/_current_slot //apple_ref/cpp/clconst/LX8266DMX/_current_slot " machineGenerated="true" --><span class="var">_current_slot</span><!-- /a -->; </pre>
+</div>
+<hr class="betweenAPIEntries"><!-- headerDoc=data;  uid=//apple_ref/cpp/data/LX8266DMX/_direction_pin;   name=LX8266DMX::_direction_pin -->
+<a name="//apple_ref/cpp/data/LX8266DMX/_direction_pin"></a>
+<h3><a name="_direction_pin">_direction_pin</a></h3>
+<hr class="afterName"><p><!-- headerDoc=abstract;uid=//apple_ref/cpp/data/LX8266DMX/_direction_pin;name=start --><!-- begin abstract --><p>pin used to control direction of output driver chip
+<!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/data/LX8266DMX/_direction_pin;name=end --></p>
+<div class='declaration_indent'>
+<pre><tt>private</tt>
+<br><!-- a logicalPath="//apple_ref/cpp/cl/uint8_t //apple_ref/cpp/tdef/uint8_t //apple_ref/cpp/tag/uint8_t //apple_ref/cpp/struct/uint8_t //apple_ref/cpp/intf/uint8_t //apple_ref/doc/anysymbol/uint8_t" machineGenerated="true" --><span class="type">uint8_t</span><!-- /a --> <!-- a logicalPath="//apple_ref/cpp/econst/_direction_pin //apple_ref/cpp/data/LX8266DMX/_direction_pin //apple_ref/cpp/data/_direction_pin //apple_ref/cpp/clconst/LX8266DMX/_direction_pin " machineGenerated="true" --><span class="var">_direction_pin</span><!-- /a -->; </pre>
 </div>
 <hr class="betweenAPIEntries"><!-- headerDoc=data;  uid=//apple_ref/cpp/data/LX8266DMX/_dmx_state;   name=LX8266DMX::_dmx_state -->
 <a name="//apple_ref/cpp/data/LX8266DMX/_dmx_state"></a>
@@ -585,17 +581,8 @@ enables transmission and tx interrupt.
 <pre><tt>private</tt>
 <br><!-- a logicalPath="//apple_ref/cpp/cl/uint16_t //apple_ref/cpp/tdef/uint16_t //apple_ref/cpp/tag/uint16_t //apple_ref/cpp/struct/uint16_t //apple_ref/cpp/intf/uint16_t //apple_ref/doc/anysymbol/uint16_t" machineGenerated="true" --><span class="type">uint16_t</span><!-- /a --> <!-- a logicalPath="//apple_ref/cpp/econst/_slots //apple_ref/cpp/data/LX8266DMX/_slots //apple_ref/cpp/data/_slots //apple_ref/cpp/clconst/LX8266DMX/_slots " machineGenerated="true" --><span class="var">_slots</span><!-- /a -->; </pre>
 </div>
-<hr class="betweenAPIEntries"><!-- headerDoc=data;  uid=//apple_ref/cpp/data/LX8266DMX/direction_pin;   name=LX8266DMX::direction_pin -->
-<a name="//apple_ref/cpp/data/LX8266DMX/direction_pin"></a>
-<h3><a name="direction_pin">direction_pin</a></h3>
-<hr class="afterName"><p><!-- headerDoc=abstract;uid=//apple_ref/cpp/data/LX8266DMX/direction_pin;name=start --><!-- begin abstract --><p>pin used to control direction of output driver chip
-<!-- end abstract --><!-- headerDoc=abstract;uid=//apple_ref/cpp/data/LX8266DMX/direction_pin;name=end --></p>
-<div class='declaration_indent'>
-<pre><tt>private</tt>
-<br><!-- a logicalPath="//apple_ref/cpp/cl/uint8_t //apple_ref/cpp/tdef/uint8_t //apple_ref/cpp/tag/uint8_t //apple_ref/cpp/struct/uint8_t //apple_ref/cpp/intf/uint8_t //apple_ref/doc/anysymbol/uint8_t" machineGenerated="true" --><span class="type">uint8_t</span><!-- /a --> <!-- a logicalPath="//apple_ref/cpp/econst/direction_pin //apple_ref/cpp/data/LX8266DMX/direction_pin //apple_ref/cpp/data/direction_pin //apple_ref/cpp/clconst/LX8266DMX/direction_pin " machineGenerated="true" --><span class="var">direction_pin</span><!-- /a -->; </pre>
-</div>
 <p class="gapBeforeFooter">&nbsp;</p><hr class="afterFooter"><div class="hd_copyright_and_timestamp">
-<p class="hd_timestamp">Last Updated: Thursday, January 14, 2016
+<p class="hd_timestamp">Last Updated: Sunday, January 17, 2016
 </p></div>
 </td></tr></table>
 </body></html>
