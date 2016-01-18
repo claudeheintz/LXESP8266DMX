@@ -4,15 +4,17 @@
 # Class
 #######################################
 
-LX8266DMXOutput	KEYWORD1
-LX8266DMXInput		KEYWORD1
+ESP8266DMX		KEYWORD1
+LX8266DMX		KEYWORD1
 
 #######################################
 # Methods and Functions 
 #######################################	
 
-start								KEYWORD2
+startOutput						KEYWORD2
+startInput						KEYWORD2
 stop								KEYWORD2
+setDirectionPin				KEYWORD2
 setMaxSlots						KEYWORD2
 setSlot							KEYWORD2
 dmxData							KEYWORD2

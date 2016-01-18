@@ -8,22 +8,20 @@
     SControl brightness of LED on GPIO14 with DMX address 1
     @section  HISTORY
 
-    v1.0 - First release
+    v1.00 - First release
+    v1.01 - Updated for single LX8266DMX class
 */
 /**************************************************************************/
 #include <LXESP8266UARTDMX.h>
-
-// LX8266DMXInput instance
-LX8266DMXInput* dmx_input = new LX8266DMXInput();
 
 int got_dmx = 0;
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
   pinMode(14, OUTPUT);
-  dmx_input->setDataReceivedCallback(&gotDMXCallback);
+  ESP8266DMX.setDataReceivedCallback(&gotDMXCallback);
   delay(1000);        //avoid boot print??
-  dmx_input->start();
+  ESP8266DMX.startInput();
 }
 
 
@@ -43,6 +41,6 @@ void gotDMXCallback(int slots) {
 void loop() {
   if ( got_dmx ) {
     //ESP8266 PWM is 10bit 0-1024
-    analogWrite(14,2*dmx_input->getSlot(1));
+    analogWrite(14,2*ESP8266DMX.getSlot(1));
   }
 }

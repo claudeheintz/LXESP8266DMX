@@ -8,13 +8,11 @@
     Simple Fade test of RESP8266 DMX Driver
     @section  HISTORY
 
-    v1.0 - First release
+    v1.00 - First release
+    v1.01 - Updated for single LX8266DMX class
 */
 /**************************************************************************/
 #include <LXESP8266UARTDMX.h>
-
-// LX8266DMXOutput instance
-LX8266DMXOutput* dmx_output = new LX8266DMXOutput();
 
 uint8_t level = 0;
 
@@ -24,7 +22,7 @@ void setup() {
   Serial.setDebugOutput(1); //use uart0 for debugging
    
   delay(1000);        //avoid boot print??
-  dmx_output->start();
+  ESP8266DMX.startOutput();
 }
 
 /************************************************************************
@@ -34,8 +32,8 @@ void setup() {
 *************************************************************************/
 
 void loop() {
- dmx_output->setSlot(7,level);
- dmx_output->setSlot(8,level);
+ ESP8266DMX.setSlot(7,level);
+ ESP8266DMX.setSlot(8,level);
  delay(50);
  level++;
 }

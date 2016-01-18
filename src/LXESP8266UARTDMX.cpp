@@ -3,13 +3,14 @@
     @file     LXESP8266UARTDMX.cpp
     @author   Claude Heintz
     @license  BSD (see LXESP8266UARTDMX.h)
-    @copyright 2015 by Claude Heintz
+    @copyright 2015-2016 by Claude Heintz
 
     DMX Driver for ESP8266 using UART1.
 
     @section  HISTORY
 
     v1.0 - First release
+    v1.1 - Consolidated Output and Input into a single class
 */
 /**************************************************************************/
 
@@ -28,6 +29,8 @@ extern "C" {
 }
 
 #include "LXESP8266UARTDMX.h"
+
+LX8266DMX ESP8266DMX;
 
 /* ***************** Utility functions derived from ESP HardwareSerial.cpp  ****************
    HardwareSerial.cpp - esp8266 UART support - Copyright (c) 2014 Ivan Grokhotkov. All rights reserved.
@@ -60,25 +63,25 @@ static const int UART_NO = -1;
  *
  */
  
-void uart_tx_interrupt_handler(LX8266DMXOutput* dmxo);
-void uart_rx_interrupt_handler(LX8266DMXInput* dmxi);
+void uart_tx_interrupt_handler(LX8266DMX* dmxo);
+void uart_rx_interrupt_handler(LX8266DMX* dmxi);
 void uart__tx_flush(void);
 void uart__rx_flush(void);
-void uart_enable_rx_interrupt(LX8266DMXInput* dmxi);
+void uart_enable_rx_interrupt(LX8266DMX* dmxi);
 void uart_disable_rx_interrupt(void);
-void uart_enable_tx_interrupt(LX8266DMXOutput* dmxo);
+void uart_enable_tx_interrupt(LX8266DMX* dmxo);
 void uart_disable_tx_interrupt(void);
 void uart_set_baudrate(int uart_nr, int baud_rate);
 
-void uart_init_tx(int baudrate, byte config, LX8266DMXOutput* dmxo);
-void uart_init_rx(int baudrate, byte config, LX8266DMXInput* dmxi);
+void uart_init_tx(int baudrate, byte config, LX8266DMX* dmxo);
+void uart_init_rx(int baudrate, byte config, LX8266DMX* dmxi);
 void uart_uninit(uart_t* uart);
 
 // ####################################################################################################
 
 // UART register definitions see esp8266_peri.h
 
-void ICACHE_RAM_ATTR uart_tx_interrupt_handler(LX8266DMXOutput* dmxo) {
+void ICACHE_RAM_ATTR uart_tx_interrupt_handler(LX8266DMX* dmxo) {
 
     // -------------- UART 1 --------------
     // check uart status register 
@@ -91,7 +94,7 @@ void ICACHE_RAM_ATTR uart_tx_interrupt_handler(LX8266DMXOutput* dmxo) {
 	 
 }
 
-void ICACHE_RAM_ATTR uart_rx_interrupt_handler(LX8266DMXInput* dmxi) {
+void ICACHE_RAM_ATTR uart_rx_interrupt_handler(LX8266DMX* dmxi) {
 
     // -------------- UART 0 --------------
     // check uart status register 
@@ -134,7 +137,7 @@ void uart_rx_flush(void) {
 
 
 //LX uses uart0 for rx
-void uart_enable_rx_interrupt(LX8266DMXInput* dmxi) {
+void uart_enable_rx_interrupt(LX8266DMX* dmxi) {
 	USIC(UART0) = 0x1ff;
 	uint8_t* uart;
 	ETS_UART_INTR_ATTACH(&uart_rx_interrupt_handler, dmxi);
@@ -151,7 +154,7 @@ void uart_disable_rx_interrupt(void) {
 }
 
 //LX uses uart1 for tx
-void uart_enable_tx_interrupt(LX8266DMXOutput* dmxo) {
+void uart_enable_tx_interrupt(LX8266DMX* dmxo) {
 	USIC(UART1) = 0x1ff;
 	uint8_t* uart;
 	ETS_UART_INTR_ATTACH(&uart_tx_interrupt_handler, dmxo);
@@ -176,7 +179,7 @@ void uart_set_config(int uart_nr, byte config) {
 }
 
 
-void uart_init_tx(int baudrate, byte config, LX8266DMXOutput* dmxo) {
+void uart_init_tx(int baudrate, byte config, LX8266DMX* dmxo) {
 	pinMode(2, SPECIAL);
 	uint32_t conf1 = 0x00000000;
 	
@@ -190,7 +193,7 @@ void uart_init_tx(int baudrate, byte config, LX8266DMXOutput* dmxo) {
 }
 
 
-void uart_init_rx(int baudrate, byte config, LX8266DMXInput* dmxi) {
+void uart_init_rx(int baudrate, byte config, LX8266DMX* dmxi) {
 
     uint32_t conf1 = 0x00000000;
     pinMode(3, SPECIAL);
@@ -253,45 +256,39 @@ parity
     #define BREAK_SENT_WAIT 70
 
 	//***** status is if interrupts are enabled and IO is active
-    #define ISR_DISABLED 0
-    #define ISR_ENABLED 1
+    #define ISR_DISABLED 			0
+    #define ISR_OUTPUT_ENABLED 	1
+    #define ISR_INPUT_ENABLED 	2
 
 
 /*******************************************************************************
- ***********************  LX8266DMXOutput member functions  ********************/
+ ***********************  LX8266DMX member functions  ********************/
 
-LX8266DMXOutput::LX8266DMXOutput ( void )
-{
-	//zero buffer including _dmxData[0] which is start code
+LX8266DMX::LX8266DMX ( void ) {
+	_direction_pin = DIRECTION_PIN_NOT_USED;	//optional
 	_slots = DMX_MAX_SLOTS;
-	
-    for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
-    	_dmxData[n] = 0;
-    }
-    _interrupt_status = ISR_DISABLED;
-}
-
-LX8266DMXOutput::LX8266DMXOutput ( uint8_t pin, uint16_t slots  )
-{
-	pinMode(pin, OUTPUT);
-	digitalWrite(pin, HIGH);
-	_slots = slots;
+	_interrupt_status = ISR_DISABLED;
 	
 	//zero buffer including _dmxData[0] which is start code
     for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
     	_dmxData[n] = 0;
     }
-    _interrupt_status = ISR_DISABLED;
 }
 
-LX8266DMXOutput::~LX8266DMXOutput ( void )
-{
+LX8266DMX::~LX8266DMX ( void ) {
     stop();
+    _receive_callback = NULL;
 }
 
-void LX8266DMXOutput::start ( void ) {
-	if ( _interrupt_status != ISR_ENABLED ) {	//prevent messing up sequence if already started...
-		_interrupt_status = ISR_ENABLED;
+void LX8266DMX::startOutput ( void ) {
+	if ( _direction_pin != DIRECTION_PIN_NOT_USED ) {
+		digitalWrite(_direction_pin, HIGH);
+	}
+	if ( _interrupt_status == ISR_INPUT_ENABLED ) {
+		stop();
+	}
+	if ( _interrupt_status == ISR_DISABLED ) {	//prevent messing up sequence if already started...
+		_interrupt_status = ISR_OUTPUT_ENABLED;
 		_dmx_state = DMX_STATE_IDLE;
 		_idle_count = 0;
 		uart_init_tx(DMX_DATA_BAUD, FORMAT_8N2, this);//starts interrupt because fifo is empty
@@ -299,20 +296,47 @@ void LX8266DMXOutput::start ( void ) {
 	}
 }
 
-void LX8266DMXOutput::stop ( void ) { 
-	uart_uninit_tx();
+void LX8266DMX::startInput ( void ) {
+	if ( _direction_pin != DIRECTION_PIN_NOT_USED ) {
+		digitalWrite(_direction_pin, LOW);
+	}
+	if ( _interrupt_status == ISR_OUTPUT_ENABLED ) {
+		stop();
+	}
+	if ( _interrupt_status == ISR_DISABLED ) {	//prevent messing up sequence if already started...
+	   _dmx_state = DMX_STATE_IDLE;
+	   uart_init_rx(DMX_DATA_BAUD, FORMAT_8N2, this);
+		_interrupt_status = ISR_INPUT_ENABLED;
+	}
+}
+
+void LX8266DMX::stop ( void ) { 
+	if ( _interrupt_status == ISR_OUTPUT_ENABLED ) {
+		uart_uninit_tx();
+	} else if ( _interrupt_status == ISR_INPUT_ENABLED ) {
+		uart_uninit_rx();
+	}
 	_interrupt_status = ISR_DISABLED;
 }
 
-void LX8266DMXOutput::setMaxSlots (int slots) {
+void LX8266DMX::setDirectionPin( uint8_t pin ) {
+	_direction_pin = pin;
+	pinMode(_direction_pin, OUTPUT);
+}
+
+void LX8266DMX::setMaxSlots (int slots) {
 	_slots = max(slots, DMX_MIN_SLOTS);
 }
 
-void LX8266DMXOutput::setSlot (int slot, uint8_t value) {
+void LX8266DMX::setSlot (int slot, uint8_t value) {
 	_dmxData[slot] = value;
 }
 
-uint8_t* LX8266DMXOutput::dmxData(void) {
+uint8_t LX8266DMX::getSlot (int slot) {
+	return _dmxData[slot];
+}
+
+uint8_t* LX8266DMX::dmxData(void) {
 	return &_dmxData[0];
 }
 
@@ -344,7 +368,7 @@ uint8_t* LX8266DMXOutput::dmxData(void) {
  * and the cycle repeats...
 */
 
-void ICACHE_RAM_ATTR LX8266DMXOutput::txEmptyInterruptHandler(void) {
+void ICACHE_RAM_ATTR LX8266DMX::txEmptyInterruptHandler(void) {
 
 	switch ( _dmx_state ) {
 		
@@ -394,57 +418,9 @@ void ICACHE_RAM_ATTR LX8266DMXOutput::txEmptyInterruptHandler(void) {
 }
 
 //************************************************************************************
-// ********************** LX8266DMXInput member functions  ************************
 // WARNING:  the input portion of this library is a draft and is not tested or complete in this version
 
-LX8266DMXInput::LX8266DMXInput ( void )
-{
-	//zero buffer including _dmxData[0] which is start code
-    for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
-    	_dmxData[n] = 0;
-    }
-    _interrupt_status = ISR_DISABLED;
-}
-
-LX8266DMXInput::LX8266DMXInput ( uint8_t pin  )
-{
-	pinMode(pin, OUTPUT);
-	digitalWrite(pin, LOW);
-	//zero buffer including _dmxData[0] which is start code
-    for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
-    	_dmxData[n] = 0;
-    }
-    _interrupt_status = ISR_DISABLED;
-}
-
-LX8266DMXInput::~LX8266DMXInput ( void )
-{
-    stop();
-    _receive_callback = NULL;
-}
-
-void LX8266DMXInput::start ( void ) {
-	if ( _interrupt_status != ISR_ENABLED ) {	//prevent messing up sequence if already started...
-	   _dmx_state = DMX_STATE_IDLE;
-	   uart_init_rx(DMX_DATA_BAUD, FORMAT_8N2, this);
-		_interrupt_status = ISR_ENABLED;
-	}
-}
-
-void LX8266DMXInput::stop ( void ) { 
-	uart_uninit_rx();
-	_interrupt_status = ISR_DISABLED;
-}
-
-uint8_t LX8266DMXInput::getSlot (int slot) {
-	return _dmxData[slot];
-}
-
-uint8_t* LX8266DMXInput::dmxData(void) {
-	return &_dmxData[0];
-}
-
-void LX8266DMXInput::setDataReceivedCallback(LXRecvCallback callback) {
+void LX8266DMX::setDataReceivedCallback(LXRecvCallback callback) {
 	_receive_callback = callback;
 }
 
@@ -465,7 +441,7 @@ void LX8266DMXInput::setDataReceivedCallback(LXRecvCallback callback) {
  *
  *  the ISR will continue to read the next frame into the buffer
 */
-void LX8266DMXInput::receiveInterruptHandler(uint8_t incoming_byte) {
+void LX8266DMX::receiveInterruptHandler(uint8_t incoming_byte) {
 	
 	if ( (U0IS & (1 << UIBD)) ) {				//break detected
 		_dmx_state = DMX_STATE_BREAK;
