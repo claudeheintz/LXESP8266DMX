@@ -38,9 +38,10 @@ LX8266DMX ESP8266DMX;
    HardwareSerial is included in the esp8266 by ESP8266 Community board package for Arduino IDE
 */
 
-static const int UART0 = 0;
-static const int UART1 = 1;
-static const int UART_NO = -1;
+//these constants are now defined in the Arduino ESP8266 library v2.1.0
+//static const int UART0 = 0;
+//static const int UART1 = 1;
+//static const int UART_NO = -1;
 
 
 /**
