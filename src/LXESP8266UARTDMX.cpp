@@ -448,7 +448,7 @@ void LX8266DMX::receiveInterruptHandler(uint8_t incoming_byte) {
 		_dmx_state = DMX_STATE_BREAK;
 		if ( _current_slot > 0 ) {
 			if ( _receive_callback != NULL ) {
-				_receive_callback(_current_slot);
+				_receive_callback(_current_slot-1);
 			}
 		}
 		_current_slot = 0;
