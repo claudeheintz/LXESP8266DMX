@@ -271,9 +271,7 @@ LX8266DMX::LX8266DMX ( void ) {
 	_interrupt_status = ISR_DISABLED;
 	
 	//zero buffer including _dmxData[0] which is start code
-    for (int n=0; n<DMX_MAX_SLOTS+1; n++) {
-    	_dmxData[n] = 0;
-    }
+	memset(_dmxData, 0, DMX_MAX_SLOTS+1);
 }
 
 LX8266DMX::~LX8266DMX ( void ) {
@@ -448,7 +446,7 @@ void LX8266DMX::receiveInterruptHandler(uint8_t incoming_byte) {
 		_dmx_state = DMX_STATE_BREAK;
 		if ( _current_slot > 0 ) {
 			if ( _receive_callback != NULL ) {
-				_receive_callback(_current_slot-1);
+				_receive_callback(_current_slot-1);	//_current_slot represents next slot so subtract one
 			}
 		}
 		_current_slot = 0;
