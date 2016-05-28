@@ -151,7 +151,7 @@ class LX8266DMX {
    /*!
     * @brief zero buffer including slot[0] which is start code
    */
-   void LX8266DMX::clearSlots (void);
+   void clearSlots (void);
    
    /*!
     * @brief provides direct access to data array
