@@ -147,6 +147,12 @@ class LX8266DMX {
 	 * @param value level (0-255)
 	*/
    void setSlot (int slot, uint8_t value);
+   
+   /*!
+    * @brief zero buffer including slot[0] which is start code
+   */
+   void LX8266DMX::clearSlots (void);
+   
    /*!
     * @brief provides direct access to data array
     * @return pointer to dmx array

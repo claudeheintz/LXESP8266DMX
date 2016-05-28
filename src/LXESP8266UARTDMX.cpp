@@ -223,7 +223,7 @@ void uart_uninit_rx(void) {
 // UART register definitions see esp8266_peri.h
 
 #define DMX_DATA_BAUD		250000
-#define DMX_BREAK_BAUD 	 	90000
+#define DMX_BREAK_BAUD 	 	88000
 /*
 #define UART_STOP_BIT_NUM_SHIFT  4
 TWO_STOP_BIT             = 0x3
@@ -269,9 +269,7 @@ LX8266DMX::LX8266DMX ( void ) {
 	_direction_pin = DIRECTION_PIN_NOT_USED;	//optional
 	_slots = DMX_MAX_SLOTS;
 	_interrupt_status = ISR_DISABLED;
-	
-	//zero buffer including _dmxData[0] which is start code
-	memset(_dmxData, 0, DMX_MAX_SLOTS+1);
+	clearSlots();
 }
 
 LX8266DMX::~LX8266DMX ( void ) {
@@ -333,6 +331,10 @@ void LX8266DMX::setSlot (int slot, uint8_t value) {
 
 uint8_t LX8266DMX::getSlot (int slot) {
 	return _dmxData[slot];
+}
+
+void LX8266DMX::clearSlots (void) {
+	memset(_dmxData, 0, DMX_MAX_SLOTS+1);
 }
 
 uint8_t* LX8266DMX::dmxData(void) {
