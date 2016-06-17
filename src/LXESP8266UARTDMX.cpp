@@ -47,21 +47,28 @@ LX8266DMX ESP8266DMX;
 /**
  *  UART GPIOs
  *
- * UART0 TX: 1 or 2
- * UART0 RX: 3
+ *  UART0 is used by Serial for debug output
+ *        so UART1 is used for DMX output (tx)
+ *  UART1 does not have the rx pin available on most ESP modules so
+ *        UART0 is used for DMX input (rx)
+ *
+ *
+ * UART0 TX: 1 or 2				SPECIAL or FUNCTION_4
+ * UART0 RX: 3						SPECIAL
  *
  * UART0 SWAP TX: 15
  * UART0 SWAP RX: 13
  *
  *
- * UART1 TX: 7 (NC) or 2
- * UART1 RX: 8 (NC)
+ * UART1 TX: 2 or 7 (NC)		SPECIAL or FUNCTION_4
+ * UART1 RX: 8 (NC)				FUNCTION_4
  *
  * UART1 SWAP TX: 11 (NC)
  * UART1 SWAP RX: 6 (NC)
  *
  * NC = Not Connected to Module Pads --> No Access
- *
+ *      Pins 6-11 typically connected to flash on most modules
+ *      see http://arduino.esp8266.com/versions/1.6.5-1160-gef26c5f/doc/reference.html
  */
  
 void uart_tx_interrupt_handler(LX8266DMX* dmxo);

@@ -54,7 +54,32 @@ TX (2) |----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
 
        Data Enable (DE) and Inverted Read Enable (!RE) can be wired to +5v for output or Gnd for input
        if direction switching is not needed.
-*/
+
+--------------------------------------------------------------------------
+------------------------  About UART GPIOs  ------------------------------
+
+  UART0 is used by Serial for debug output (also see datasheet pg 21)
+        so UART1 is used for DMX output (tx)
+  UART1 does not have the rx pin available on most ESP modules so
+        UART0 is used for DMX input (rx)
+
+
+ UART0 TX: 1 or 2				SPECIAL or FUNCTION_4
+ UART0 RX: 3						SPECIAL
+
+ UART0 SWAP TX: 15
+ UART0 SWAP RX: 13
+
+ UART1 TX: 2 or 7 (NC)		SPECIAL or FUNCTION_4
+ UART1 RX: 8 (NC)				FUNCTION_4
+
+ UART1 SWAP TX: 11 (NC)
+ UART1 SWAP RX: 6 (NC)
+
+ NC = Not Connected to Module Pads --> No Access
+      Pins 6-11 typically connected to flash on most modules
+      see http://arduino.esp8266.com/versions/1.6.5-1160-gef26c5f/doc/reference.html
+ */
 
 
 #ifndef LX8266DMX_H
