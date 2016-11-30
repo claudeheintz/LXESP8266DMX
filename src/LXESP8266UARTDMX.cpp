@@ -221,7 +221,7 @@ void uart_uninit_tx(void) {
 }
 
 void uart_uninit_rx(void) {
-    uart_disable_tx_interrupt();
+    uart_disable_rx_interrupt();
 	 pinMode(3, INPUT);
 }
 
