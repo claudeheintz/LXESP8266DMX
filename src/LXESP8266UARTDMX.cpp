@@ -196,7 +196,9 @@ void uart_init_tx(int baudrate, byte config, LX8266DMX* dmxo) {
     uart_tx_flush();
     uart_enable_tx_interrupt(dmxo);
 
-    conf1 |= (0x01 << UCFFT);//empty threshold 0x20
+    //conf1 |= (0x00 << UCFET);// tx empty threshold is zero
+    						   // tx fifo empty interrupt triggers continuously unless
+    						   // data register contains a byte which has not moved to shift reg yet
     USC1(UART1) = conf1;
 }
 
