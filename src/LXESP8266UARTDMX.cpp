@@ -330,6 +330,10 @@ void LX8266DMX::setDirectionPin( uint8_t pin ) {
 	pinMode(_direction_pin, OUTPUT);
 }
 
+uint16_t LX8266DMX::numberOfSlots (void) {
+	return _slots;
+}
+
 void LX8266DMX::setMaxSlots (int slots) {
 	_slots = max(slots, DMX_MIN_SLOTS);
 }

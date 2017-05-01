@@ -147,6 +147,11 @@ class LX8266DMX {
     * @param pin to be automatically set for input/output direction
     */
    void setDirectionPin( uint8_t pin );
+   
+   /*!
+    * @brief the current number of slots
+   */
+   uint16_t numberOfSlots (void);
 	
 	/*!
 	 * @brief Sets the number of slots (aka addresses or channels) sent per DMX frame.
