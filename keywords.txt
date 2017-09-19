@@ -13,13 +13,22 @@ LX8266DMX		KEYWORD1
 
 startOutput						KEYWORD2
 startInput						KEYWORD2
-stop								KEYWORD2
-setDirectionPin				KEYWORD2
+startRDM						KEYWORD2
+stop							KEYWORD2
+setDirectionPin					KEYWORD2
 setMaxSlots						KEYWORD2
 setSlot							KEYWORD2
 dmxData							KEYWORD2
+rdmData							KEYWORD2
+receivedData					KEYWORD2
+receivedRDMData					KEYWORD2
 getSlot							KEYWORD2
-setDataReceivedCallback		KEYWORD2
+setDataReceivedCallback			KEYWORD2
+setRDMReceivedCallback			KEYWORD2
+sendRDMDiscoveryPacket			KEYWORD2
+sendRDMDiscoveryMute			KEYWORD2
+sendRDMGetCommand				KEYWORD2
+sendRDMSetCommand				KEYWORD2
 
 #######################################
 # Constants
