@@ -153,7 +153,10 @@ class LX8266DMX {
    void startInput( void );
    
    
-   
+   /*!
+    * @brief starts interrupt that handled send/receive of RDM & DMX
+    * @discussion  
+   */
    void startRDM ( uint8_t pin, uint8_t direction=1 );
    
    /*!
@@ -262,7 +265,7 @@ class LX8266DMX {
   	
   	/************************************ RDM Methods ***********************************/
   	 
-  	 /*!
+   /*!
     * @brief Function called when RDM frame has been read
     * @discussion Sets a pointer to a function that is called
     *             after an RDM frame has been received.  
@@ -271,7 +274,7 @@ class LX8266DMX {
     */
    void setRDMReceivedCallback(LXRecvCallback callback);
    
-   	/*!
+   /*!
     * @brief indicate if dmx frame should be sent by bi-directional task loop
     * @discussion should only be called by task loop
     * @return 1 if dmx frame should be sent
@@ -281,31 +284,31 @@ class LX8266DMX {
 	uint8_t rdmTaskMode( void );
 	
 	
-	/*!
+   /*!
     * @brief sets rdm task to send mode and the direction pin to HIGH
 	*/
 	void setTaskSendDMX( void );
 	
-	/*!
+   /*!
     * @brief sets rdm task to send mode after task mode loops.
     *        Sent after sending RDM message so DMX is resumed.
     *        Blocks until task loop sets mode to send.
 	*/
 	void restoreTaskSendDMX( void );
 	
-	/*!
+   /*!
     * @brief sets rdm task to receive mode
     *        Prepares variables to receive starting with next break.
     *        Sets the direction pin to LOW.
 	*/
 	void setTaskReceive( void );
 	
-	/*!
+   /*!
     * @brief length of the rdm packet awaiting being sent
 	*/
 	uint8_t rdmPacketLength( void );
 	
-	/*!
+   /*!
     * @brief sends packet using bytes from _rdmPacket ( rdmData() )
     * @discussion sets rdm task mode to DMX_TASK_SEND_RDM which causes
     *             _rdmPacket to be sent on next opportunity from task loop.
@@ -317,29 +320,29 @@ class LX8266DMX {
     */
 	void sendRawRDMPacket( uint8_t len );
 	
-	/*!
+   /*!
     * @brief convenience method for setting fields in the top 20 bytes of an RDM message
     *        that will be sent.
     *        Destination UID needs to be set outside this method.
-    *        Source UID is set to constant THIS_DEVICE_ID below.
+    *        Source UID is set to static member THIS_DEVICE_ID
 	*/
 	void setupRDMControllerPacket(uint8_t* pdata, uint8_t msglen, uint8_t port, uint16_t subdevice);
 	
-	/*!
+   /*!
     * @brief convenience method for setting fields in the top 20 bytes of an RDM message
     *        that will be sent.
     *        Destination UID needs to be set outside this method.
-    *        Source UID is set to constant THIS_DEVICE_ID below.
+    *        Source UID is set to static member THIS_DEVICE_ID
 	*/
 	void  setupRDMDevicePacket(uint8_t* pdata, uint8_t msglen, uint8_t rtype, uint8_t msgs, uint16_t subdevice);
 	
-	/*!
+   /*!
     * @brief convenience method for setting fields in the top bytes 20-23 of an RDM message
     *        that will be sent.
 	*/
 	void setupRDMMessageDataBlock(uint8_t* pdata, uint8_t cmdclass, uint16_t pid, uint8_t pdl);
 	
-	/*!
+   /*!
     * @brief send discovery packet using upper and lower bounds
 	* @discussion Assumes that regular DMX was sending when method is called and 
 	*             so restores sending, waiting for a frame to be sent before returning.
@@ -347,7 +350,7 @@ class LX8266DMX {
     */
     uint8_t sendRDMDiscoveryPacket(UID lower, UID upper, UID* single);
     
-    /*!
+   /*!
     * @brief send discovery mute/un-mute packet to target UID
 	* @discussion Assumes that regular DMX was sending when method is called and 
 	*             so restores sending, waiting for a frame to be sent before returning.
@@ -355,21 +358,21 @@ class LX8266DMX {
     */
     uint8_t sendRDMDiscoveryMute(UID target, uint8_t cmd);
     
-    /*!
+   /*!
     * @brief send previously built packet in _rdmPacket and validate response
     * @discussion Response to packet, if valid, is copied into _rdmData and 1 is returned
     *             Otherwise, 0 is returned.
     */
     uint8_t sendRDMControllerPacket( void );
     
-    /*!
+   /*!
     * @brief copies len of bytes into _rdmPacket and sends it
     * @discussion Response to packet, if valid, is copied into _rdmData and 1 is returned
     *             Otherwise, 0 is returned.
     */
     uint8_t sendRDMControllerPacket( uint8_t* bytes, uint8_t len );
     
-    /*!
+   /*!
     * @brief send RDM_GET_COMMAND packet
 	* @discussion Assumes that regular DMX was sending when method is called and 
 	*             so restores sending, waiting for a frame to be sent before returning.
@@ -377,7 +380,7 @@ class LX8266DMX {
     */
     uint8_t sendRDMGetCommand(UID target, uint16_t pid, uint8_t* info, uint8_t len);
     
-    /*!
+   /*!
     * @brief send RDM_SET_COMMAND packet
 	* @discussion Assumes that regular DMX was sending when method is called and 
 	*             so restores sending, waiting for a frame to be sent before returning.
@@ -385,41 +388,66 @@ class LX8266DMX {
     */
     uint8_t sendRDMSetCommand(UID target, uint16_t pid, uint8_t* info, uint8_t len);
     
-    
+     
+    /*!
+    * @brief send RDM_GET_COMMAND_RESPONSE with RDM_RESPONSE_TYPE_ACK
+	* @discussion sends data (info) of length (len)
+    */
     void sendRDMGetResponse(UID target, uint16_t pid, uint8_t* info, uint8_t len);
     
-    void sendRDMSetResponse(UID target, uint16_t pid);
+    /*!
+    * @brief send RDM_SET_COMMAND_RESPONSE/RDM_DISC_COMMAND_RESPONSE with RDM_RESPONSE_TYPE_ACK
+	* @discussion PDL is zero
+    */
+    void sendAckRDMResponse(uint8_t cmdclass, UID target, uint16_t pid);
+    
+    
+    
+    
+    void sendMuteAckRDMResponse(uint8_t cmdclass, UID target, uint16_t pid);
+    
+    /*!
+    * @brief send response to RDM_DISC_UNIQUE_BRANCH packet
+    */
+    void sendRDMDiscoverBranchResponse( void );
+    
+    /*!
+    * @brief static member containing UID of this device
+    * @discussion call LX8266DMX::THIS_DEVICE_ID.setBytes() or
+    *                  ESP8266DMX.THIS_DEVICE_ID.setBytes() to change default
+    */
+    static UID THIS_DEVICE_ID;
     
   private:
 
-   /*!
-   * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
-   */
+	/*!
+	 * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
+	 */
   	uint8_t  _dmx_state;
   	
-  	/*!
-   * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
-   */
+	/*!
+	 * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
+	 */
   	uint8_t  _dmx_read_state;
   	
-   /*!
-    * @brief true when ISR is enabled
-   */
+	/*!
+	 * @brief true when ISR is enabled
+	 */
   	uint8_t  _interrupt_status;
   	
-   /*!
-   * @brief count of idle interrupts
-   */
+	/*!
+	 * @brief count of idle interrupts
+	 */
   	uint8_t  _idle_count;
   	
-  /*!
-   * @brief flag indicating RDM task should send dmx slots
-   */
+	/*!
+	 * @brief flag indicating RDM task should send dmx slots
+	 */
   	uint8_t  _rdm_task_mode;
   	
-  /*!
-   * @brief flag indicating RDM task should send dmx slots
-   */
+	/*!
+	 * @brief flag indicating RDM task should send dmx slots
+	 */
   	uint8_t  _rdm_read_handled;
   	
   	/*!
@@ -432,37 +460,37 @@ class LX8266DMX {
 	 */
   	uint16_t  _packet_length;
   	
-  /*!
-   * @brief pin used to control direction of output driver chip
-   */
+	/*!
+	 * @brief pin used to control direction of output driver chip
+	 */
   	uint8_t _direction_pin;
   	
-  /*!
-   * @brief slot index indicating position of byte to be sent
-   */
+	/*!
+	 * @brief slot index indicating position of byte to be sent
+	 */
   	uint16_t  _next_slot;
   	
-  /*!
-   * @brief slot index indicating position of last byte received
-   */
+	/*!
+	 * @brief slot index indicating position of last byte received
+	 */
   	uint16_t  _current_slot;
   	
-  /*!
-   * @brief number of dmx slots ~24 to 512
-   */
+	/*!
+	 * @brief number of dmx slots ~24 to 512
+	 */
   	uint16_t  _slots;
   	
-  	/*!
+	/*!
 	 * @brief outgoing rdm packet length
 	 */
-  	uint16_t  _rdm_len;
+	uint16_t  _rdm_len;
   	
-  /*!
-   * @brief Array of dmx data including start code
-   */
+	/*!
+	 * @brief Array of dmx data including start code
+	 */
   	uint8_t  _dmxData[DMX_MAX_FRAME];
   	
-  	/*!
+	/*!
 	 * @brief Array of received bytes first byte is start code
 	 */
   	uint8_t  _receivedData[DMX_MAX_FRAME];
@@ -490,7 +518,5 @@ class LX8266DMX {
 };
 
 extern LX8266DMX ESP8266DMX;
-
-const UID THIS_DEVICE_ID(0x6C, 0x78, 0x00, 0x00, 0x00, 0x01);
 
 #endif // ifndef LX8266DMX_H

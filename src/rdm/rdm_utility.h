@@ -89,6 +89,9 @@ extern "C" {
 // product information  PIDs
 #define RDM_DEVICE_INFO			0x0060
 #define RDM_DEVICE_START_ADDR	0x00F0
+#define RDM_DEVICE_MODEL_DESC   0x0080
+#define RDM_DEVICE_MFG_LABEL    0x0081
+#define RDM_DEVICE_DEV_LABEL    0x0082
 
 // control information  PIDs
 #define RDM_IDENTIFY_DEVICE		0x1000

@@ -24,7 +24,7 @@ TOD::TOD( void ) {
 
 uint8_t TOD::addUID(UID uid) {
 	if ( next < (STORAGE_SIZE-6) ) {
-		UID::copyUID(uid, storage, next);
+		UID::copyFromUID(uid, storage, next);
 		next += 6;
 		return 1;
 	}

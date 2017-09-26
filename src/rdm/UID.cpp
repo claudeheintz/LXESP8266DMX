@@ -17,17 +17,16 @@
 #include <rdm/UID.h>
 #include <Print.h>
 
+UID::UID( void ) {
+	setBytes((uint64_t)0);
+}
+
 UID::UID( uint64_t u ) {
     setBytes(u);
 }
 
 UID::UID(uint8_t m1, uint8_t m2, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4) {
-    bytes[0] = m1;
-    bytes[1] = m2;
-    bytes[2] = d1;
-    bytes[3] = d2;
-    bytes[4] = d3;
-    bytes[5] = d4;
+    setBytes(m1, m2, d1, d2, d3, d4);
 }
 
 UID::UID(const uint8_t *address) {
@@ -80,6 +79,24 @@ void UID::setBytes(UID u) {
 	memcpy(bytes, u.bytes, sizeof(bytes));
 }
 
+void UID::setBytes(uint8_t m1, uint8_t m2, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4) {
+	bytes[0] = m1;
+    bytes[1] = m2;
+    bytes[2] = d1;
+    bytes[3] = d2;
+    bytes[4] = d3;
+    bytes[5] = d4;
+}
+
+/*
+void UID::setBytes(uint8_t* u) {
+	memcpy(bytes, u, sizeof(bytes));
+}*/
+
+uint64_t UID::getValue ( void ) {
+	return uid_bytes2long(bytes);
+}
+
 size_t UID::printTo(Print& p) const {
     size_t n = 0;
     n += p.print(bytes[0], HEX);
@@ -121,6 +138,10 @@ void print64Bit(uint64_t n) {
 }
 
 uint64_t uid_bytes2long(uint8_t* b) {
+	return (((uint64_t)b[0]) <<40)| (((uint64_t)b[1])<<32) | (((uint64_t)b[2])<<24) | (((uint64_t)b[3])<<16) | (((uint64_t)b[4])<<8) | b[5];
+}
+
+uint64_t uid_bytes2long(const uint8_t* b) {
 	return (((uint64_t)b[0]) <<40)| (((uint64_t)b[1])<<32) | (((uint64_t)b[2])<<24) | (((uint64_t)b[3])<<16) | (((uint64_t)b[4])<<8) | b[5];
 }
 
