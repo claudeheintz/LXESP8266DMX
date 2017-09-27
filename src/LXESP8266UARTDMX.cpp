@@ -12,7 +12,7 @@
     v1.0 - First release
     v1.1 - Consolidated Output and Input into a single class
     v2.1 - add RDM controller support
-    v2.2 - draft RDM device support
+    v2.2 - RDM device support
 */
 /**************************************************************************/
 
@@ -393,7 +393,7 @@ void LX8266DMX::startOutput ( void ) {
 	}
 	if ( _interrupt_status == ISR_DISABLED ) {	//prevent messing up sequence if already started...
 		_interrupt_status = ISR_OUTPUT_ENABLED;
-		_dmx_state = DMX_STATE_BREAK;
+		_dmx_send_state = DMX_STATE_BREAK;
 		_idle_count = 0;
 		uart_init_tx(DMX_BREAK_BAUD, FORMAT_8E1, this);//starts interrupt because fifo is empty								
 	}
@@ -425,7 +425,7 @@ void LX8266DMX::startRDM ( uint8_t pin, uint8_t direction ) {
 	if ( _interrupt_status == ISR_DISABLED ) {
 		_interrupt_status = ISR_RDM_ENABLED;
 		//TX
-		_dmx_state = DMX_STATE_BREAK;
+		_dmx_send_state = DMX_STATE_BREAK;
 		_idle_count = 0;
 		//RX
 		_dmx_read_state = DMX_STATE_IDLE;
@@ -519,13 +519,13 @@ uint8_t* LX8266DMX::receivedRDMData( void ) {
 
 ICACHE_RAM_ATTR void LX8266DMX::txEmptyInterruptHandler(void) {
 
-	switch ( _dmx_state ) {
+	switch ( _dmx_send_state ) {
 		
 		case DMX_STATE_BREAK:
 			// set the slower baud rate and send the break
 			uart_set_baudrate(UART1, DMX_BREAK_BAUD);
 			uart_set_config(UART1, FORMAT_8E1);			
-			_dmx_state = DMX_STATE_BREAK_SENT;
+			_dmx_send_state = DMX_STATE_BREAK_SENT;
 			_idle_count = 0;
 			USF(1) = 0x0;
 			break;		// <- DMX_STATE_BREAK
@@ -534,16 +534,16 @@ ICACHE_RAM_ATTR void LX8266DMX::txEmptyInterruptHandler(void) {
 			// set the baud to full speed and send the start code
 			uart_set_baudrate(UART1, DMX_DATA_BAUD);
 			uart_set_config(UART1, FORMAT_8N2);	
-			_next_slot = 0;
-			_dmx_state = DMX_STATE_DATA;
-			USF(1) = _dmxData[_next_slot++];	//send next slot (start code)
+			_next_send_slot = 0;
+			_dmx_send_state = DMX_STATE_DATA;
+			USF(1) = _dmxData[_next_send_slot++];	//send next slot (start code)
 			break;		// <- DMX_STATE_START
 		
 		case DMX_STATE_DATA:
 			// send the next data byte until the end is reached
-			USF(1) = _dmxData[_next_slot++];	//send next slot
-			if ( _next_slot > _slots ) {
-				_dmx_state = DMX_STATE_IDLE;
+			USF(1) = _dmxData[_next_send_slot++];	//send next slot
+			if ( _next_send_slot > _slots ) {
+				_dmx_send_state = DMX_STATE_IDLE;
 				_idle_count = 0;
 			}
 			break;		// <- DMX_STATE_DATA
@@ -552,7 +552,7 @@ ICACHE_RAM_ATTR void LX8266DMX::txEmptyInterruptHandler(void) {
 			// wait a number of interrupts to be sure last data byte is sent before changing baud
 			_idle_count++;
 			if ( _idle_count > DATA_END_WAIT ) {
-				_dmx_state = DMX_STATE_BREAK;
+				_dmx_send_state = DMX_STATE_BREAK;
 			}
 			break;		// <- DMX_STATE_IDLE
 			
@@ -560,7 +560,7 @@ ICACHE_RAM_ATTR void LX8266DMX::txEmptyInterruptHandler(void) {
 			//wait to insure MAB before changing baud back to data speed (takes longer at slower speed)
 			_idle_count++;
 			if ( _idle_count > BREAK_SENT_WAIT ) {			
-				_dmx_state = DMX_STATE_START;
+				_dmx_send_state = DMX_STATE_START;
 			}
 			break;		// <- DMX_STATE_BREAK_SENT
 	}
@@ -569,13 +569,13 @@ ICACHE_RAM_ATTR void LX8266DMX::txEmptyInterruptHandler(void) {
 ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 
 	if ( _rdm_task_mode == DMX_TASK_SEND_RDM ) {
-		switch ( _dmx_state ) {
+		switch ( _dmx_send_state ) {
 		
 			case DMX_STATE_BREAK:
 				// set the slower baud rate and send the break
 				uart_set_baudrate(UART1, DMX_BREAK_BAUD);
 				uart_set_config(UART1, FORMAT_8E1);			
-				_dmx_state = DMX_STATE_BREAK_SENT;
+				_dmx_send_state = DMX_STATE_BREAK_SENT;
 				_idle_count = 0;
 				USF(1) = 0x0;
 				break;		// <- DMX_STATE_BREAK
@@ -584,16 +584,16 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 				// set the baud to full speed and send the start code
 				uart_set_baudrate(UART1, DMX_DATA_BAUD);
 				uart_set_config(UART1, FORMAT_8N2);	
-				_next_slot = 0;
-				_dmx_state = DMX_STATE_DATA;
-				USF(1) = _rdmPacket[_next_slot++];	//send next slot (start code)
+				_next_send_slot = 0;
+				_dmx_send_state = DMX_STATE_DATA;
+				USF(1) = _rdmPacket[_next_send_slot++];	//send next slot (start code)
 				break;		// <- DMX_STATE_START
 		
 			case DMX_STATE_DATA:
 				// send the next data byte until the end is reached
-				USF(1) = _rdmPacket[_next_slot++];	//send next slot
-				if ( _next_slot >= _rdm_len ) {			// unlike DMX slots (which are 1 based + start code), _rdm_len is zero based, requiring >=
-					_dmx_state = DMX_STATE_IDLE;
+				USF(1) = _rdmPacket[_next_send_slot++];	//send next slot
+				if ( _next_send_slot >= _rdm_len ) {			// unlike DMX slots (which are 1 based + start code), _rdm_len is zero based, requiring >=
+					_dmx_send_state = DMX_STATE_IDLE;
 					_idle_count = 0;
 				}
 				break;		// <- DMX_STATE_DATA
@@ -602,12 +602,12 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 				// wait a number of interrupts to be sure last data byte is sent before changing baud
 				_idle_count++;
 				if ( _idle_count > DATA_END_WAIT ) {
-					_dmx_state = DMX_STATE_BREAK;
+					_dmx_send_state = DMX_STATE_BREAK;
 					
 					//setTask to receive
 					USIE(UART1) &= ~(1 << UIFE); 			// uart_disable_tx_interrupt();
 					digitalWrite(_direction_pin, LOW);		// call from interrupt only because receiving starts
-					_current_slot = 0;						// and these flags need to be set
+					_next_read_slot = 0;						// and these flags need to be set
 					_packet_length = DMX_MAX_FRAME;			// but no bytes read from fifo until next task loop
 					if ( _rdm_read_handled ) {
 						_dmx_read_state = DMX_READ_STATE_RECEIVING;
@@ -623,7 +623,7 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 				//wait to insure MAB before changing baud back to data speed (takes longer at slower speed)
 				_idle_count++;
 				if ( _idle_count > BREAK_SENT_WAIT ) {			
-					_dmx_state = DMX_STATE_START;
+					_dmx_send_state = DMX_STATE_START;
 				}
 				break;		// <- DMX_STATE_BREAK_SENT
 				
@@ -631,13 +631,13 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 		
 	} else  {	// Send type state other than DMX_TASK_SEND_RDM
 				// (handler not called when DMX_TASK_RECEIVE)
-		switch ( _dmx_state ) {
+		switch ( _dmx_send_state ) {
 		
 			case DMX_STATE_BREAK:
 				// set the slower baud rate and send the break
 				uart_set_baudrate(UART1, DMX_BREAK_BAUD);
 				uart_set_config(UART1, FORMAT_8E1);			
-				_dmx_state = DMX_STATE_BREAK_SENT;
+				_dmx_send_state = DMX_STATE_BREAK_SENT;
 				_idle_count = 0;
 				USF(1) = 0x0;
 				break;		// <- DMX_STATE_BREAK
@@ -646,16 +646,16 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 				// set the baud to full speed and send the start code
 				uart_set_baudrate(UART1, DMX_DATA_BAUD);
 				uart_set_config(UART1, FORMAT_8N2);	
-				_next_slot = 0;
-				_dmx_state = DMX_STATE_DATA;
-				USF(1) = _dmxData[_next_slot++];	//send next slot (start code)
+				_next_send_slot = 0;
+				_dmx_send_state = DMX_STATE_DATA;
+				USF(1) = _dmxData[_next_send_slot++];	//send next slot (start code)
 				break;		// <- DMX_STATE_START
 		
 			case DMX_STATE_DATA:
 				// send the next data byte until the end is reached
-				USF(1) = _dmxData[_next_slot++];	//send next slot
-				if ( _next_slot > _slots ) {
-					_dmx_state = DMX_STATE_IDLE;
+				USF(1) = _dmxData[_next_send_slot++];	//send next slot
+				if ( _next_send_slot > _slots ) {
+					_dmx_send_state = DMX_STATE_IDLE;
 					_idle_count = 0;
 				}
 				break;		// <- DMX_STATE_DATA
@@ -664,7 +664,7 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 				// wait a number of interrupts to be sure last data byte is sent before changing baud
 				_idle_count++;
 				if ( _idle_count > DATA_END_WAIT ) {
-					_dmx_state = DMX_STATE_BREAK;
+					_dmx_send_state = DMX_STATE_BREAK;
 					
 					if ( _rdm_task_mode == DMX_TASK_SET_SEND ) {
 						_rdm_task_mode = DMX_TASK_SEND;
@@ -678,7 +678,7 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 				//wait to insure MAB before changing baud back to data speed (takes longer at slower speed)
 				_idle_count++;
 				if ( _idle_count > BREAK_SENT_WAIT ) {			
-					_dmx_state = DMX_STATE_START;
+					_dmx_send_state = DMX_STATE_START;
 				}
 				break;		// <- DMX_STATE_BREAK_SEN
 			
@@ -689,7 +689,7 @@ ICACHE_RAM_ATTR void LX8266DMX::rdmTxEmptyInterruptHandler(void) {
 //************************************************************************************
 
 void LX8266DMX::printReceivedData( void ) {
-	for(int j=0; j<_current_slot; j++) {
+	for(int j=0; j<_next_read_slot; j++) {
 		Serial.println(_receivedData[j]);
 	}
 }
@@ -697,9 +697,9 @@ void LX8266DMX::printReceivedData( void ) {
 ICACHE_RAM_ATTR void LX8266DMX::packetComplete( void ) {
 	if ( _receivedData[0] == 0 ) {				//zero start code is DMX
 		if ( _rdm_read_handled == 0 ) {			// not handled by specific method
-			if ( _current_slot > DMX_MIN_SLOTS ) {
-				_slots = _current_slot - 1;				//_current_slot represents next slot so subtract one
-				for(int j=0; j<_current_slot; j++) {	//copy dmx values from read buffer
+			if ( _next_read_slot > DMX_MIN_SLOTS ) {
+				_slots = _next_read_slot - 1;				//_next_read_slot represents next slot so subtract one
+				for(int j=0; j<_next_read_slot; j++) {	//copy dmx values from read buffer
 					_dmxData[j] = _receivedData[j];
 				}
 	
@@ -733,26 +733,26 @@ ICACHE_RAM_ATTR void LX8266DMX::packetComplete( void ) {
 
 ICACHE_RAM_ATTR void LX8266DMX::resetFrame( void ) {		
 	_dmx_read_state = DMX_READ_STATE_IDLE;						// insure wait for next break
-	//_dmx_state????
+	//_dmx_send_state????
 }
 
 ICACHE_RAM_ATTR void LX8266DMX::breakReceived( void ) {
 	if ( _dmx_read_state == DMX_READ_STATE_RECEIVING ) {	// break has already been detected
-		if ( _current_slot > 1 ) {						// break before end of maximum frame
+		if ( _next_read_slot > 1 ) {						// break before end of maximum frame
 			if ( _receivedData[0] == 0 ) {				// zero start code is DMX
 				packetComplete();						// packet terminated with slots<512
 			}
 		}
 	}
 	_dmx_read_state = DMX_READ_STATE_RECEIVING;
-	_current_slot = 0;
+	_next_read_slot = 0;
 	_packet_length = DMX_MAX_FRAME;						// default to receive complete frame
 }
 
 ICACHE_RAM_ATTR void LX8266DMX::byteReceived(uint8_t c) {
 	if ( _dmx_read_state == DMX_READ_STATE_RECEIVING ) {
-		_receivedData[_current_slot] = c;
-		if ( _current_slot == 2 ) {						//RDM length slot
+		_receivedData[_next_read_slot] = c;
+		if ( _next_read_slot == 2 ) {						//RDM length slot
 			if ( _receivedData[0] == RDM_START_CODE ) {			//RDM start code
 				if ( _rdm_read_handled == 0 ) {
 					_packet_length = c + 2;				//add two bytes for checksum
@@ -764,8 +764,8 @@ ICACHE_RAM_ATTR void LX8266DMX::byteReceived(uint8_t c) {
 			}
 		}
 	
-		_current_slot++;
-		if ( _current_slot >= _packet_length ) {		//reached expected end of packet
+		_next_read_slot++;
+		if ( _next_read_slot >= _packet_length ) {		//reached expected end of packet
 			packetComplete();
 		}
 	
@@ -794,7 +794,7 @@ void LX8266DMX::setTaskSendDMX( void ) {		// only valid if connection started us
 
 ICACHE_RAM_ATTR void LX8266DMX::restoreTaskSendDMX( void ) {		// only valid if connection started using startRDM()
 	digitalWrite(_direction_pin, HIGH);
-	_dmx_state = DMX_STATE_BREAK;
+	_dmx_send_state = DMX_STATE_BREAK;
 	 _rdm_task_mode = DMX_TASK_SET_SEND;
 	 USIE(UART1) |= (1 << UIFE);					//restore the interrupt
 	 do {
@@ -803,9 +803,9 @@ ICACHE_RAM_ATTR void LX8266DMX::restoreTaskSendDMX( void ) {		// only valid if c
 }
 
 void LX8266DMX::setTaskReceive( void ) {		// only valid if connection started using startRDM()
-	_current_slot = 0;
+	_next_read_slot = 0;
 	_packet_length = DMX_MAX_FRAME;
-    _dmx_state = DMX_STATE_IDLE;
+    _dmx_send_state = DMX_STATE_IDLE;
     _rdm_task_mode = DMX_TASK_RECEIVE;
     _rdm_read_handled = 0;
     USIE(UART1) &= ~(1 << UIFE);				// uart_disable_tx_interrupt();
@@ -824,14 +824,14 @@ void LX8266DMX::sendRawRDMPacket( uint8_t len ) {		// only valid if connection s
 	} else {
 		digitalWrite(_direction_pin, HIGH);	//possible interrupt read & cause frame error(?)
 		delayMicroseconds(100);
-		_dmx_state = DMX_STATE_BREAK;
+		_dmx_send_state = DMX_STATE_BREAK;
 		_rdm_task_mode = DMX_TASK_SEND_RDM;
 		 //set the interrupt
 		USIE(UART1) |= (1 << UIFE);
 	}
 	
 	while ( _rdm_task_mode ) {	//wait for packet to be sent and listening to start
-		delay(2);				//_rdm_task_mode is set to 0 (receive) after RDM packet is completely sent
+		delay(1);				//_rdm_task_mode is set to 0 (receive) after RDM packet is completely sent
 	}
 }
 
@@ -888,13 +888,13 @@ uint8_t LX8266DMX::sendRDMDiscoveryPacket(UID lower, UID upper, UID* single) {
 	
 	_rdm_read_handled = 1;
 	sendRawRDMPacket(RDM_DISC_UNIQUE_BRANCH_PKTL);
-	delay(2);
+	delay(3);
 
 	// any bytes read indicate response to discovery packet
 	// check if a single, complete, uncorrupted packet has been received
 	// otherwise, refine discovery search
 	
-	if ( _current_slot ) {
+	if ( _next_read_slot ) {
 		rv = RDM_PARTIAL_DISCOVERY;
 		
 		// find preamble separator
@@ -905,7 +905,7 @@ uint8_t LX8266DMX::sendRDMDiscoveryPacket(UID lower, UID upper, UID* single) {
 		}
 		// 0-7 bytes preamble
 		if ( j < 8 ) {
-			if ( _current_slot == j + 17 ) { //preamble separator plus 16 byte payload
+			if ( _next_read_slot == j + 17 ) { //preamble separator plus 16 byte payload
 				uint8_t bindex = j + 1;
 				
 				//calculate checksum of 12 slots representing UID
@@ -947,9 +947,9 @@ uint8_t LX8266DMX::sendRDMDiscoveryMute(UID target, uint8_t cmd) {
 
 	_rdm_read_handled = 1;
 	sendRawRDMPacket(RDM_PKT_BASE_TOTAL_LEN);
-	delay(2);
+	delay(3);
 	
-	if ( _current_slot >= (RDM_PKT_BASE_TOTAL_LEN+2) ) {				//expected pdl 2 or 8
+	if ( _next_read_slot >= (RDM_PKT_BASE_TOTAL_LEN+2) ) {				//expected pdl 2 or 8
 		if ( validateRDMPacket(_receivedData) ) {
 			if ( _receivedData[RDM_IDX_RESPONSE_TYPE] == RDM_RESPONSE_TYPE_ACK ) {
 				if ( _receivedData[RDM_IDX_CMD_CLASS] == RDM_DISC_COMMAND_RESPONSE ) {
@@ -982,9 +982,9 @@ uint8_t LX8266DMX::sendRDMControllerPacket( void ) {
 	uint8_t rv = 0;
 	_rdm_read_handled = 1;
 	sendRawRDMPacket(_rdmPacket[2]+2);
-	delay(2);
+	delay(3);
 	
-	if ( _current_slot > 0 ) {
+	if ( _next_read_slot > 0 ) {
 		if ( validateRDMPacket(_receivedData) ) {
 			uint8_t plen = _receivedData[2] + 2;
 			for(int rv=0; rv<plen; rv++) {
@@ -1152,10 +1152,10 @@ void LX8266DMX::sendRDMDiscoverBranchResponse( void ) {
 	_rdm_len = 25;
 	digitalWrite(_direction_pin, HIGH); 	// could cut off receiving (?)
 	delayMicroseconds(100);
-	_next_slot = 1;//SKIP start code
+	_next_send_slot = 1;//SKIP start code
 	uart_set_baudrate(UART1, DMX_DATA_BAUD);
 	uart_set_config(UART1, FORMAT_8N2);	
-	_dmx_state = DMX_STATE_DATA;
+	_dmx_send_state = DMX_STATE_DATA;
 	
 	_rdm_task_mode = DMX_TASK_SEND_RDM;
 	 //set the interrupt

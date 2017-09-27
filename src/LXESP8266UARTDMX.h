@@ -423,7 +423,7 @@ class LX8266DMX {
 	/*!
 	 * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
 	 */
-  	uint8_t  _dmx_state;
+  	uint8_t  _dmx_send_state;
   	
 	/*!
 	 * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
@@ -468,12 +468,12 @@ class LX8266DMX {
 	/*!
 	 * @brief slot index indicating position of byte to be sent
 	 */
-  	uint16_t  _next_slot;
+  	uint16_t  _next_send_slot;
   	
 	/*!
 	 * @brief slot index indicating position of last byte received
 	 */
-  	uint16_t  _current_slot;
+  	uint16_t  _next_read_slot;
   	
 	/*!
 	 * @brief number of dmx slots ~24 to 512
