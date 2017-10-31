@@ -1107,7 +1107,6 @@ void LX8266DMX::sendMuteAckRDMResponse(uint8_t cmdclass, UID target, uint16_t pi
 	//Build RDM packet
 	setupRDMDevicePacket(_rdmPacket, plen, RDM_RESPONSE_TYPE_ACK, 0, RDM_ROOT_DEVICE);
 	UID::copyFromUID(target, _rdmPacket, 3);
-	uint16_t cf;
 	setupRDMMessageDataBlock(_rdmPacket, cmdclass, pid, 0x02);
 	
 	sendRawRDMPacket(plen+2);	//add 2 bytes for checksum
