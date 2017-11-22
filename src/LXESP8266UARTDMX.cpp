@@ -716,7 +716,7 @@ ICACHE_RAM_ATTR void LX8266DMX::packetComplete( void ) {
 					for(int j=0; j<plen; j++) {
 						_rdmData[j] = _receivedData[j];
 					}
-					if ( _receive_callback != NULL ) {
+					if ( _rdm_receive_callback != NULL ) {
 						_rdm_receive_callback(plen);
 					}
 				}
