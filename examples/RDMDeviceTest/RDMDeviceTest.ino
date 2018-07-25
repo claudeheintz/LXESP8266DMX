@@ -27,14 +27,17 @@ uint8_t device_label[33];
 #define MFG_LABEL             "LXDMX"
 #define MODEL_DESCRIPTION     "RDMDeviceTest"
 
+#define DIRECTION_PIN 15
+#define LED_PIN       14
+
 void setup() {
   WiFi.forceSleepBegin(); 
   delay(1);
   Serial.setDebugOutput(1); //use uart0 for debugging
   
   pinMode(BUILTIN_LED, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(14, OUTPUT);
+  pinMode(DIRECTION_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
   //diagnostic pins
   pinMode(12, OUTPUT);
   pinMode(16, INPUT_PULLUP);
@@ -45,7 +48,7 @@ void setup() {
   ESP8266DMX.setRDMReceivedCallback(&gotRDMCallback);
   LX8266DMX::THIS_DEVICE_ID.setBytes(0x6C, 0x78, 0x0F, 0x0A, 0x0C, 0x0E);    //change device ID from default
   
-  ESP8266DMX.startRDM(4, DMX_TASK_RECEIVE);
+  ESP8266DMX.startRDM(DIRECTION_PIN, DMX_TASK_RECEIVE);
 }
 
 
@@ -71,7 +74,7 @@ void loop() {
   if ( got_dmx ) {
     
     //ESP8266 PWM is 10bit 0-1024
-    analogWrite(14,2*ESP8266DMX.getSlot(start_address));
+    analogWrite(LED_PIN,2*ESP8266DMX.getSlot(start_address));
     got_dmx = 0;  //reset
     
   } else if ( got_rdm ) {
