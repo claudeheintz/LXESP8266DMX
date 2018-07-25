@@ -20,6 +20,7 @@ int got_dmx = 0;
 int got_rdm = 0;
 uint8_t discovery_enabled = 1;
 uint16_t start_address = 1;
+uint16_t input_value = 0;
 
 uint8_t device_label[33];
 
@@ -32,7 +33,7 @@ uint8_t device_label[33];
 
 void setup() {
   WiFi.forceSleepBegin(); 
-  delay(1);
+  delay(5000);
   Serial.setDebugOutput(1); //use uart0 for debugging
   
   pinMode(BUILTIN_LED, OUTPUT);
@@ -72,9 +73,11 @@ ICACHE_RAM_ATTR void gotRDMCallback(int len) {
 
 void loop() {
   if ( got_dmx ) {
-    
+    input_value = ESP8266DMX.getSlot(start_address);
+    //gamma correct
+    input_value = (input_value * input_value ) / 255;
     //ESP8266 PWM is 10bit 0-1024
-    analogWrite(LED_PIN,2*ESP8266DMX.getSlot(start_address));
+    analogWrite(LED_PIN,2*input_value);
     got_dmx = 0;  //reset
     
   } else if ( got_rdm ) {

@@ -17,6 +17,7 @@
 int got_dmx = 0;
 
 void setup() {
+  WiFi.forceSleepBegin(); //not using WiFi, sleep to prevent background activity
   pinMode(BUILTIN_LED, OUTPUT);
   pinMode(14, OUTPUT);
   ESP8266DMX.setDataReceivedCallback(&gotDMXCallback);
