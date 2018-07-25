@@ -43,4 +43,5 @@ void loop() {
     //ESP8266 PWM is 10bit 0-1024
     analogWrite(14,2*ESP8266DMX.getSlot(1));
   }
+  //wdt_reset();
 }
