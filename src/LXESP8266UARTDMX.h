@@ -127,6 +127,8 @@ typedef void (*LXRecvCallback)(int);
    Use getSlot() to read the level value for a particular DMX dimmer/address/channel.
    
    LX8266DMX is used with a single instance called ESP8266DMX.
+   
+   LX8266DMX is NOT compatible with Serial.begin when DMX will be read.
 */
 
 class LX8266DMX {
