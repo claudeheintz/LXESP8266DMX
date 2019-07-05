@@ -85,11 +85,13 @@ TX (2) |----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
 #ifndef LX8266DMX_H
 #define LX8266DMX_H
 
+
 #include <Arduino.h>
 #include <inttypes.h>
 #include <rdm/UID.h>
 
 #define DMX_MIN_SLOTS 24
+#define RDM_MAX_FRAME 257
 #define DMX_MAX_SLOTS 512
 #define DMX_MAX_FRAME 513
 
@@ -500,12 +502,12 @@ class LX8266DMX {
   	/*!
 	 * @brief Array representing an rdm packet to be sent
 	 */
-	uint8_t  _rdmPacket[257];
+	uint8_t  _rdmPacket[RDM_MAX_FRAME];
 	
 	/*!
 	 * @brief Array representing a received rdm packet
 	 */
-	uint8_t  _rdmData[257];
+	uint8_t  _rdmData[RDM_MAX_FRAME];
   	
    /*!
     * @brief Pointer to receive callback function
@@ -516,6 +518,7 @@ class LX8266DMX {
     * @brief Pointer to receive callback function
     */
   	LXRecvCallback _rdm_receive_callback;
+  	
   	
 };
 

@@ -14,14 +14,19 @@
 /**************************************************************************/
 #include <LXESP8266UARTDMX.h>
 
+#define LED_PIN_OUTPUT 14
+#define DIRECTION_PIN 15
+
 uint8_t level = 0;
+int d = 1;
 
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);
-  Serial.begin(9600);
-  Serial.setDebugOutput(1); //use uart0 for debugging
-   
-  delay(1000);        //avoid boot print??
+  pinMode(LED_PIN_OUTPUT, OUTPUT);
+  pinMode(DIRECTION_PIN, OUTPUT);
+
+  Serial.setDebugOutput(UART0); //use uart0 for debugging
+
+  ESP8266DMX.setDirectionPin(DIRECTION_PIN);
   ESP8266DMX.startOutput();
 }
 
@@ -33,7 +38,14 @@ void setup() {
 
 void loop() {
  ESP8266DMX.setSlot(7,level);
- ESP8266DMX.setSlot(8,level);
+ ESP8266DMX.setSlot(10,level);
+ analogWrite(LED_PIN_OUTPUT, level);
  delay(50);
- level++;
+ level+= d;
+ if ( level == 0 ) {
+  d = 1;
+ } else if ( level == 100 ) {
+  d = -1;
+ }
+ 
 }

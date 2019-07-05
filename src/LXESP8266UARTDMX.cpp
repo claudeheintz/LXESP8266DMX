@@ -120,7 +120,7 @@ ICACHE_RAM_ATTR void uart_rx_interrupt_handler(LX8266DMX* dmxi) {
 
 	  while(U0IS & (1 << UIFF)) {
 			dmxi->byteReceived((char) (U0F & 0xff));
-			U0IC = (1 << UIFF);
+			U0IC |= (1 << UIFF);
 	  }
      
      // if break detected, call receiveInterruptHandler and then clear interrupt
@@ -138,7 +138,7 @@ ICACHE_RAM_ATTR void uart_rdm_interrupt_handler(LX8266DMX* dmxr) {
 
 	  while(U0IS & (1 << UIFF)) {
 			dmxr->byteReceived((char) (U0F & 0xff));
-			U0IC = (1 << UIFF);
+			U0IC |= (1 << UIFF);
 	  }
      
      // if break detected, call receiveInterruptHandler and then clear interrupt
@@ -535,7 +535,7 @@ ICACHE_RAM_ATTR void LX8266DMX::txEmptyInterruptHandler(void) {
 			uart_set_baudrate(UART1, DMX_DATA_BAUD);
 			uart_set_config(UART1, FORMAT_8N2);	
 			_next_send_slot = 0;
-			_dmx_send_state = DMX_STATE_DATA;
+			_dmx_send_state = DMX_STATE_DATA;			
 			USF(1) = _dmxData[_next_send_slot++];	//send next slot (start code)
 			break;		// <- DMX_STATE_START
 		
