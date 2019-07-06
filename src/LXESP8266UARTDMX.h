@@ -267,6 +267,11 @@ class LX8266DMX {
    */
   	void byteReceived(uint8_t c);
   	
+  	/*!
+    * @brief returns true if _dmx_read_state == DMX_READ_STATE_RECEIVING
+   */
+  	uint8_t isReceiving( void );
+  	
   	/************************************ RDM Methods ***********************************/
   	 
    /*!

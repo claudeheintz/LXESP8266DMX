@@ -193,7 +193,8 @@ void uart_enable_rx_interrupt(LX8266DMX* dmxi) {
 
 //LX uses uart0 for rx
 void uart_disable_rx_interrupt(void) {
-   USIE(UART0) &= ~(1 << UIFF);
+   USIE(UART0) &= ~(1 << UIFF);   //receive full
+   USIE(UART0) &= ~(1 << UIBD);   //break detected
    //ETS_UART_INTR_DISABLE();		disables all UART interrupts including Hardware serial
 }
 
@@ -769,6 +770,11 @@ ICACHE_RAM_ATTR void LX8266DMX::byteReceived(uint8_t c) {
 			packetComplete();
 		}
 	}
+}
+
+
+uint8_t LX8266DMX::isReceiving( void ) {
+	return ( _dmx_read_state == DMX_READ_STATE_RECEIVING );
 }
 
 void LX8266DMX::setDataReceivedCallback(LXRecvCallback callback) {
