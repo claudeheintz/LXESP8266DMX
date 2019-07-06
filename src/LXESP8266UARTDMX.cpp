@@ -118,7 +118,7 @@ ICACHE_RAM_ATTR void uart_rx_interrupt_handler(LX8266DMX* dmxi) {
     // check uart status register 
     // if read buffer is full, call receiveInterruptHandler and then clear interrupt
 
-	  while(U0IS & (1 << UIFF)) {
+	  while (U0IS & (1 << UIFF)) {
 			dmxi->byteReceived((char) (U0F & 0xff));
 			U0IC |= (1 << UIFF);
 	  }
@@ -768,7 +768,6 @@ ICACHE_RAM_ATTR void LX8266DMX::byteReceived(uint8_t c) {
 		if ( _next_read_slot >= _packet_length ) {		//reached expected end of packet
 			packetComplete();
 		}
-	
 	}
 }
 

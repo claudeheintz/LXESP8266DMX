@@ -432,7 +432,7 @@ class LX8266DMX {
 	/*!
 	 * @brief represents phase of sending dmx packet data/break/etc used to change baud settings
 	 */
-  	uint8_t  _dmx_read_state;
+  	volatile uint8_t  _dmx_read_state;
   	
 	/*!
 	 * @brief true when ISR is enabled
@@ -477,12 +477,12 @@ class LX8266DMX {
 	/*!
 	 * @brief slot index indicating position of last byte received
 	 */
-  	uint16_t  _next_read_slot;
+  	volatile uint16_t  _next_read_slot;
   	
 	/*!
 	 * @brief number of dmx slots ~24 to 512
 	 */
-  	uint16_t  _slots;
+  	volatile uint16_t  _slots;
   	
 	/*!
 	 * @brief outgoing rdm packet length
