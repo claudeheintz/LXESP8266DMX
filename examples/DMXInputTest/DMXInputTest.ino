@@ -35,6 +35,11 @@ TX(2)|----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
 !) Pins 2 & 3 of the MAX481 are held LOW to enable input
 !) The 1k/3k resistors are a simple voltage divider to convert from 5v to 3.3v
 
+
+!!) Note that ESP8266 has limited UARTs and this library will conflict with Serial.
+!!) Also, depending on the board, the above circuit may need to be disconnected
+    in order to load a sketch.
+
 */
 /**************************************************************************/
 #include <LXESP8266UARTDMX.h>
