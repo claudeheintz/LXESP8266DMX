@@ -10,12 +10,37 @@
 
     v1.00 - First release
     v1.01 - Updated for single LX8266DMX class
+    
+    
+    
+    
+    
+    
+This is the circuit for a simple unisolated DMX Shield for input:
+
+ Arduino                    SN 75176 A or MAX 481CPA
+ pin       3k        1k      _______________
+ |   GND---/\/\/\-+-/\/\/\--| 1      Vcc 8 |------ +5v
+ V                |         |              |                 DMX Output
+  RX |------------+    +----| 2        B 7 |---------------- Pin 2
+     |                 |    |              |
+     |      +3.3v------_----| 3 DE     A 6 |---------------- Pin 3
+     |                      |              |
+TX(2)|----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
+     |                       _______________   |
+     |          330 ohm                       GND
+  14 |-----------/\/\/\-----[ LED ]------------|
+
+
+!) Pins 2 & 3 of the MAX481 are held HIGH to enable output
+!) The 1k/3k resistors are a simple voltage divider to convert from 5v to 3.3v (for input only)
+
 */
 /**************************************************************************/
 #include <LXESP8266UARTDMX.h>
 
 #define LED_PIN_OUTPUT 14
-#define DIRECTION_PIN 15
+#define DIRECTION_PIN 5
 
 uint8_t level = 0;
 int d = 1;
@@ -37,8 +62,8 @@ void setup() {
 *************************************************************************/
 
 void loop() {
- ESP8266DMX.setSlot(7,level);
- ESP8266DMX.setSlot(10,level);
+ ESP8266DMX.setSlot(8,level);
+ ESP8266DMX.setSlot(1,level);
  analogWrite(LED_PIN_OUTPUT, level);
  delay(50);
  level+= d;

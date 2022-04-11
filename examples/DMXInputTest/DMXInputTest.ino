@@ -5,11 +5,36 @@
     @license  BSD (see LXESP8266DMX LICENSE)
     @copyright 2015 by Claude Heintz
 
-    SControl brightness of LED on GPIO14 with DMX address 1
+    Control brightness of LED on GPIO14 with DMX address 1
     @section  HISTORY
 
     v1.00 - First release
     v1.01 - Updated for single LX8266DMX class
+    
+    
+    
+    
+    
+    
+This is the circuit for a simple unisolated DMX Shield for input:
+
+ Arduino                    SN 75176 A or MAX 481CPA
+ pin       3k        1k      _______________
+ |   GND---/\/\/\-+-/\/\/\--| 1      Vcc 8 |------ +5v
+ V                |         |              |                 DMX Input
+  RX |------------+    +----| 2        B 7 |---------------- Pin 2
+     |                 |    |              |
+     |      GND-------------| 3 DE     A 6 |---------------- Pin 3
+     |                      |              |
+TX(2)|----------------------| 4 DI   Gnd 5 |---+------------ Pin 1
+     |                       _______________   |
+     |          330 ohm                       GND
+  14 |-----------/\/\/\-----[ LED ]------------|
+
+
+!) Pins 2 & 3 of the MAX481 are held LOW to enable input
+!) The 1k/3k resistors are a simple voltage divider to convert from 5v to 3.3v
+
 */
 /**************************************************************************/
 #include <LXESP8266UARTDMX.h>

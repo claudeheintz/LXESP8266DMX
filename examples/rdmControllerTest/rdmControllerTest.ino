@@ -32,7 +32,8 @@ UID upper(0,0,0,0,0,0);
 UID mid(0,0,0,0,0,0);
 UID found(0,0,0,0,0,0);
 
-#define DIRECTION_PIN 4
+// DIRECTION_PIN use 4 or 15
+#define DIRECTION_PIN 4   
 #define DISC_STATE_SEARCH 0
 #define DISC_STATE_TBL_CK 1
 uint8_t discovery_state = DISC_STATE_TBL_CK;
@@ -199,7 +200,7 @@ void testRDMDiscovery() {
 	setup
 *************************************************************************/
 void setup() {
-  Serial.begin(115200);
+  //Serial.begin(115200);
   //Serial.print("setup... ");
   Serial.setDebugOutput(1); //use uart0 for debugging
   
@@ -228,8 +229,8 @@ void loop() {
   
   ESP8266DMX.setSlot(7,testLevel);
   ESP8266DMX.setSlot(8,255);
-  ESP8266DMX.setSlot(371,testLevel);
-  ESP8266DMX.setSlot(22,255);
+  ESP8266DMX.setSlot(103,testLevel);
+  ESP8266DMX.setSlot(101,255);
   loopDivider++;
   if ( loopDivider == 4 ) {
     testLevel++;
